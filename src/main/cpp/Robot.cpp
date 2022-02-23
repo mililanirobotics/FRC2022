@@ -8,6 +8,7 @@
 
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <ctime> 
+#include <time.h>
 
 //limelight stuff
 #include "frc/smartdashboard/Smartdashboard.h"
@@ -29,6 +30,7 @@ void Robot::RobotInit() {
   testPIDController.SetFF(kFF);
   //testPIDController.SetD(kD);
   //testPIDController.SetI(kI);
+
 }
 
 
@@ -277,7 +279,36 @@ void Robot::AutonomousPeriodic() {
 
 }
 
-void Robot::TeleopInit() {}
+void Robot::TeleopInit() {
+
+}
+
+void Robot::ScoringCargo(){
+  if (gamepad2.GetRawButtonPressed(4)){
+    //if the Y button to score 1 cargo is pressed...assumes one cargo is already stored in vertical conveyor 
+    flywheelShooter1.Set(1);
+    //possibly add a wait command as flywheel rpm increases to shooting speed?
+    conveyorVertical.Set(1);
+    frc::Wait(units::second_t(3));
+    //turns on flywheel shooter and vertical conveyor then waits for the robot to score a cargo...
+    flywheelShooter1.Set(0);
+    conveyorVertical.Set(0);
+    //flywheel shooter and vertical conveyor are turned off 
+  }
+  if (gamepad2.GetRawButtonPressed(1)){
+    //if the A button to score 2 cargo is pressed...assumes both cargo are already stored in conveyor
+    flywheelShooter1.Set(1);
+    //possibly add a wait command as flywheel rpm increases to shooting speed
+    conveyorVertical.Set(1);
+    conveyorHorizontal.Set(1);
+    frc::Wait(units::second_t(3));
+    //turns on flyhweel shooter, vertical conveyor, and horizontal conveyor then waits for the robot to score both cargo
+    flywheelShooter1.Set(0);
+    conveyorVertical.Set(0);
+    //flywheel shooter, vertical conveyor, and horizontal conveyor are all turned off
+  }
+}
+
 
 void Robot::TeleopPeriodic() {
   //joysticks
@@ -373,13 +404,104 @@ void Robot::TeleopPeriodic() {
 
   //frc::CameraServer::StartAutomaticCapture();
 
-  if (gamepad2_AButton){
-    nt::NetworkTableInstance::GetDefault().GetTable("limelight")->PutNumber("stream", 1);
-  } //sets secondary camera stream to the lower right corner of primary camera stream
+  // if (gamepad2_AButton){
+  //   nt::NetworkTableInstance::GetDefault().GetTable("limelight")->PutNumber("stream", 1);
+  // } //sets secondary camera stream to the lower right corner of primary camera stream
 
-  if (gamepad1.GetRawButtonPressed(4) == true){
-    nt::NetworkTableInstance::GetDefault().GetTable("limelight")->PutNumber("stream", 2);
-  } //set primary camera stream to lower right corner of secondary camera stream
+  // if (gamepad1.GetRawButtonPressed(4) == true){
+  //   nt::NetworkTableInstance::GetDefault().GetTable("limelight")->PutNumber("stream", 2);
+  // } //set primary camera stream to lower right corner of secondary camera stream\\
+
+
+//Code for microswitch
+
+  double cargoLocation;
+
+  if (horizontalSwitch.Get() == 0 && verticalSwitch.Get() == 0){
+    //if both switches sense cargo...
+    
+    cargoLocation = 1;
+
+} else if (horizontalSwitch.Get() == 0 && verticalSwitch.Get() == 1){
+    //if horizontal switch senses cargo, but vertical switch does not sense cargo...
+    
+    cargoLocation = 2;
+
+} else if (horizontalSwitch.Get() == 1 && verticalSwitch.Get() == 0){
+    //if horizontal switch does not sense cargo, but vertical switch does sense cargo...
+    
+    cargoLocation = 3;
+
+} else if (horizontalSwitch.Get() == 1 && verticalSwitch.Get() == 1){
+  //if both horizontal and vertical switch do not sense cargo...
+  
+  cargoLocation = 4;
+
+} else {
+  
+  cargoLocation = 0;
+}
+
+if (gamepad2.GetRawAxis(2) >= 0.1){
+  //if left trigger is pressed...
+  
+  if (cargoLocation == 1){
+    //if both switches sense cargo...
+   
+    conveyorHorizontal.Set(0);
+    conveyorVertical.Set(0);
+    //conveyor motors will not turn on because robot already possesses two cargo
+
+    ScoringCargo();
+    //scoring function is called
+
+  } else if (cargoLocation = 2){
+    //if horizontal switch senses cargo and vertical switch does not sense cargo...
+
+      while (verticalSwitch.Get() == 1){
+        conveyorVertical.Set(1);
+    } //vertical conveyor will turn on until cargo moves to vertical sensor position
+
+      while (horizontalSwitch.Get() == 1){
+        conveyorHorizontal.Set(1);
+      } //horizontal conveyor will turn on until cargo moves to horizontal sensor position
+
+      ScoringCargo();
+      //scoring function is called
+  
+  } else if (cargoLocation = 3){
+    //if horizontal switch does not sense cargo and vertical switch senses cargo...
+
+      while (horizontalSwitch.Get() == 1){
+        conveyorHorizontal.Set(1);
+      } //horizontal conveyor will turn on until cargo moves to horizontal sensor position
+
+      ScoringCargo();
+      //scoring function is called
+
+  } else if (cargoLocation == 4){
+    //if both horizontal and vertical switch do not sense cargo 
+
+      while (horizontalSwitch.Get() == 1){
+        conveyorHorizontal.Set(1);
+      } //horizontal conveyor will turn on until cargo moves to horizontal sensor position
+
+      while (verticalSwitch.Get() == 1){
+        conveyorVertical.Set(1);
+        
+      } //vertical conveyor will turn on until cargo moves to vertical sensor position
+
+      ScoringCargo();
+      //scoring function is called
+
+  } else {
+
+      conveyorHorizontal.Set(0);
+      conveyorVertical.Set(0);
+
+  }
+
+}
 
 }
 

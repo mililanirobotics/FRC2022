@@ -16,6 +16,8 @@
 #include <frc/DoubleSolenoid.h>
 #include <frc/Compressor.h>
 
+//microswitch imports
+#include "frc/DigitalInput.h"
 
 
 //limelight stuff
@@ -94,6 +96,12 @@ class Robot : public frc::TimedRobot {
   const double robotRadius = 2482304; //TBD
   const double degreesToInches = (degrees * (M_PI / 180) * robotRadius);
 
+  //Switch declarations
+  frc::DigitalInput horizontalSwitch{1};//port will change 
+  frc::DigitalInput verticalSwitch{2}; //port will change
+
+  //score cargo method
+  void ScoringCargo();
 
   //Gamepad assignments:
   //Controller 1
