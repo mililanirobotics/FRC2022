@@ -5,6 +5,7 @@
 #include "Robot.h"
 
 #include <fmt/core.h>
+#include <units/time.h>
 
 #include <frc/smartdashboard/SmartDashboard.h>
 
@@ -19,6 +20,10 @@ void Robot::RobotInit() {
   testPIDController.SetFF(kFF);
   //testPIDController.SetD(kD);
   //testPIDController.SetI(kI);
+
+  
+  
+  
 }
 
 /**
@@ -65,26 +70,28 @@ void Robot::AutonomousPeriodic() {
 
 void Robot::TeleopInit() {
   
-  
+  exampleDoublePCM.Set(frc::DoubleSolenoid::Value::kForward);
+  exampleDoublePCM2.Set(frc::DoubleSolenoid::Value::kForward);
+
+
   //testPIDController.SetSmartMotionMaxVelocity(1000);
 }
 
 void Robot::TeleopPeriodic() {
     if(gamepad.GetRawButtonPressed(1)) {
-      motorVelocity = 5000;
-    }
-    else if (gamepad.GetRawButtonPressed(2)) {
-      motorVelocity += 1000; 
+      exampleDoublePCM.Toggle();
+      exampleDoublePCM2.Toggle();
     }
     else if (gamepad.GetRawButtonPressed(3)) {
-      motorVelocity -= 500;
-    }
-    else if (gamepad.GetRawButtonPressed(4)) {
-      motorVelocity = 0;
+      frc::Wait(time1);
+      exampleDoublePCM.Set(frc::DoubleSolenoid::Value::kOff);
+      exampleDoublePCM2.Set(frc::DoubleSolenoid::Value::kOff);
+
+      
     }
     
     //NOTE: Setting target velocity = setting target RPM
-    testPIDController.SetReference(motorVelocity, rev::ControlType::kVelocity);
+    //testPIDController.SetReference(motorVelocity, rev::ControlType::kVelocity);
 
           
 

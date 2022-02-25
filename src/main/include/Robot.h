@@ -10,7 +10,9 @@
 #include <frc/smartdashboard/SendableChooser.h>
 #include "rev/CANSparkMax.h"
 #include <frc/Joystick.h>
+#include <frc/DoubleSolenoid.h>
 #include "ctre/phoenix.h"
+
 
 class Robot : public frc::TimedRobot {
  public:
@@ -24,13 +26,17 @@ class Robot : public frc::TimedRobot {
   void DisabledPeriodic() override;
   void TestInit() override;
   void TestPeriodic() override;
+
+  double Limelight();
   //motors
   rev::CANSparkMax test0{15, rev::CANSparkMax::MotorType::kBrushless};
   rev::CANSparkMax test1{16, rev::CANSparkMax::MotorType::kBrushless};
   
   TalonSRX test{10};
   
-
+  //pneumatics
+  frc::DoubleSolenoid exampleDoublePCM{frc::PneumaticsModuleType::CTREPCM, 0, 1};
+  frc::DoubleSolenoid exampleDoublePCM2{frc::PneumaticsModuleType::CTREPCM, 2, 3};
 
   //encoders
   rev::SparkMaxRelativeEncoder encoder1 = test0.GetEncoder();
@@ -47,6 +53,7 @@ class Robot : public frc::TimedRobot {
   //https://docs.wpilib.org/en/stable/docs/software/advanced-controls/introduction/tuning-pid-controller.html
   double kP = 0.000001, kFF = 0.00017375, kMaxoutput = 1, kminoutput = -1, kI = 1e-4, kD = 1;
   double motorVelocity = 0;
+  units::second_t time1{0.2};
   
  private:
   frc::SendableChooser<std::string> m_chooser;
