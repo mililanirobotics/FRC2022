@@ -197,26 +197,26 @@ void Robot::turnDrive(double speed, double degrees, double timeoutSeconds) {
 }
 
 
-void Robot::horizontalConveyor(double speed, double rotations, double timeoutSeconds) {
-  int newRotationsTarget;
-  double conveyorSpeed = speed;
-  newRotationsTarget = (int)(rotations * countsPerRev);
+// void Robot::horizontalConveyor(double speed, double rotations, double timeoutSeconds) {
+//   int newRotationsTarget;
+//   double conveyorSpeed = speed;
+//   newRotationsTarget = (int)(rotations * countsPerRev);
   
-  horizontalConveyorEncoder.SetPosition(0);
+//   horizontalConveyorEncoder.SetPosition(0);
 
-  horizontalConveyorEncoder.SetPosition(newRotationsTarget);
+//   horizontalConveyorEncoder.SetPosition(newRotationsTarget);
 
-  conveyorHorizontal.Set(conveyorSpeed);
+//   conveyorHorizontal.Set(conveyorSpeed);
   
-  //timer::reset;
+//   //timer::reset;
   
-  //insert timer function (while timer is less than seconds, motor is busy)?
+//   //insert timer function (while timer is less than seconds, motor is busy)?
 
-  conveyorHorizontal.Set(0);
+//   conveyorHorizontal.Set(0);
 
-  horizontalConveyorEncoder.GetPosition();
+//   horizontalConveyorEncoder.GetPosition();
 
-}
+// }
 
 void Robot::verticalConveyor(double speed, double rotations, double timeoutSeconds) {
   int newRotationsTarget;
@@ -266,7 +266,7 @@ void Robot::AutonomousPeriodic() {
   //Telemetry.addData("Status,", "Resetting Encoders");
   encoderDrive(1, 120, 120, 2);
   turnDrive(1, 180, 2);
-  horizontalConveyor(1, 5, 3);   //rotations TBD
+  //horizontalConveyor(1, 5, 3);   //rotations TBD
   verticalConveyor(1, 5, 3);   //rotations TBD
   flywheel(1, 6, 3); //rotations TBD
   encoderDrive(1, 6, 12, 2); //turn 180 degrees? will need testing 
@@ -280,8 +280,224 @@ void Robot::AutonomousPeriodic() {
 }
 
 void Robot::TeleopInit() {
+  rightSolenoid.Set(frc::DoubleSolenoid::Value::kOff);
+  leftSolenoid.Set(frc::DoubleSolenoid::Value::kOff);
+}
+void Robot::TeleopPeriodic() {
+
+  if(gamepad1.GetRawButtonPressed(1)) {
+    rightSolenoid.Toggle();
+    leftSolenoid.Toggle();
+  }
+  else if(gamepad1.GetRawButtonPressed(2)) {
+    rightSolenoid.Set(frc::DoubleSolenoid::Value::kOff);
+    leftSolenoid.Set(frc::DoubleSolenoid::Value::kOff);
+  }
+
+
+
+
+  //joysticks
+  // double leftStickY = gamepad.GetRawAxis(1);
+  // double rightStickY = gamepad.GetRawAxis(5);
+
+  //buttons
+  // bool b = gamepad.GetRawButton(2);
+  // bool y = gamepad.GetRawButton(4);
+  // bool x = gamepad.GetRawButton(3);
+
+  // if(b && leftStickY >= 0.05) {
+  //   L1Motor.Set(-leftStickY * 0.5);
+  //   L2Motor.Set(-leftStickY * 0.5);
+  // }
+  // else if(y && leftStickY >= 0.05) {
+  //   L1Motor.Set(-leftStickY);
+  //   L2Motor.Set(-leftStickY);
+  // }
+
+  // if(rightStickY >= 0.05) {
+  //   L1Motor.Set(-rightStickY);
+  //   L2Motor.Set(-rightStickY);
+  // }
+  
+
+  //flywheel test
+  // if(gamepad1.GetRawButtonPressed(1)) {
+  //   //DistanceToRPM(Robot::Limelight());
+  //   firstRun = Robot::LimelightDistance();
+  //   secondRun = Robot::LimelightDistance();
+  //   thirdRun = Robot::LimelightDistance();
+
+  //   frc::SmartDashboard::PutNumber("Median", Robot::GetMedian(firstRun, secondRun, thirdRun));
+  //   Robot::DistanceToRPM(Robot::GetMedian(firstRun, secondRun, thirdRun));
+  // }
+  // else if (gamepad1.GetRawButtonPressed(2)) {
+  //   //motorVelocity = 2000;
+  // }
+  // else if(gamepad1.GetRawButtonPressed(3)) {
+  //   motorVelocity -= 250;
+    
+  // }
+  // else if (gamepad1.GetRawButtonPressed(4)) {
+  //   motorVelocity = 0;
+  // }
+
+  // //Calculated gearing Factor of ~1.846 or so
+  // trueVelocity = motorVelocity * 1.9;
+  // //NOTE: Setting target velocity = setting target RPM
+  // testPIDController.SetReference(-trueVelocity, rev::ControlType::kVelocity);
+    
+
+  // //limelight
+  // // if(gamepad.GetRawButton(1)) {
+  // //     Robot::Limelight();
+  // // }
+
+  // //actual teleop
+  //   //Drive + slow mode
+
+  // //Left motors
+  // if(gamepad2_RTrigger >= 0.1 && (gamepad1_LStick >= 0.1 || gamepad1_LStick <= -0.1)) {
+  //   leftFront.Set(-gamepad1_LStick * 0.5);
+  // }
+  // else if(gamepad1_LStick >= 0.1 || gamepad1_LStick <= -0.1) {
+  //   leftFront.Set(-gamepad1_LStick);
+  // }
+  // else {
+  //   leftFront.Set(0);
+  // }
+  
+  // //Right motors
+  // if(gamepad2_RTrigger >= 0.1 && (gamepad1_RStick >= 0.1 || gamepad1_LStick <= -0.1)) {
+  //   rightFront.Set(-gamepad1_RStick * 0.5);
+  // }
+  // else if(gamepad1_RStick >= 0.1 || gamepad1_RStick <= -0.1) {
+  //   rightFront.Set(-gamepad1_RStick);
+  // }
+  // else {
+  //   rightFront.Set(0);
+  // }
+    
+  //Conveyer deliver to flywheel
+  // if (gamepad2.GetRawButtonPressed(3)) {
+  //   C1Motor.Set(ControlMode::PercentOutput, 1);
+  //   C2Motor.Set(ControlMode::PercentOutput, 1);
+  // }
+  // else if (gamepad2_LTrigger) {
+  //   C1Motor.Set(ControlMode::PercentOutput, 1);
+  //   C2Motor.Set(ControlMode::PercentOutput, -1);
+  // }
+
+  //frc::CameraServer::StartAutomaticCapture();
+
+  // if (gamepad2_AButton){
+  //   nt::NetworkTableInstance::GetDefault().GetTable("limelight")->PutNumber("stream", 1);
+  // } //sets secondary camera stream to the lower right corner of primary camera stream
+
+  // if (gamepad1.GetRawButtonPressed(4) == true){
+  //   nt::NetworkTableInstance::GetDefault().GetTable("limelight")->PutNumber("stream", 2);
+  // } //set primary camera stream to lower right corner of secondary camera stream\\
+
+
+//Code for microswitch
+
+  // double cargoLocation = 2;
+
+  //   if (horizontalSwitch.Get() == 0 && verticalSwitch.Get() == 0){
+  //     //if both switches sense cargo...
+      
+  //     cargoLocation = 1;
+
+  // } else if (horizontalSwitch.Get() == 0 && verticalSwitch.Get() == 1){
+  //     //if horizontal switch senses cargo, but vertical switch does not sense cargo...
+      
+  //     cargoLocation = 2;
+
+  // } else if (horizontalSwitch.Get() == 1 && verticalSwitch.Get() == 0){
+  //     //if horizontal switch does not sense cargo, but vertical switch does sense cargo...
+      
+  //     cargoLocation = 3;
+
+  // } else if (horizontalSwitch.Get() == 1 && verticalSwitch.Get() == 1){
+  //   //if both horizontal and vertical switch do not sense cargo...
+    
+  //   cargoLocation = 4;
+
+  // } else {
+    
+  //   cargoLocation = 0;
+  // }
+
+  // if (gamepad2.GetRawAxis(2) >= 0.1){
+  //   //if left trigger is pressed...
+    
+  //   if (cargoLocation == 1){
+  //     //if both switches sense cargo...
+    
+  //     conveyorHorizontal.Set(0);
+  //     conveyorVertical.Set(0);
+  //     //conveyor motors will not turn on because robot already possesses two cargo
+
+  //     ScoringCargo();
+  //     //scoring function is called
+
+  //   } else if (cargoLocation == 2){
+  //     //if horizontal switch senses cargo and vertical switch does not sense cargo...
+
+  //       while (verticalSwitch.Get() == 1){
+  //         conveyorVertical.Set(1);
+  //     } //vertical conveyor will turn on until cargo moves to vertical sensor position
+
+  //       while (horizontalSwitch.Get() == 1){
+  //         conveyorHorizontal.Set(1);
+  //       } //horizontal conveyor will turn on until cargo moves to horizontal sensor position
+
+  //       ScoringCargo();
+  //       //scoring function is called
+    
+  //   } else if (cargoLocation == 3){
+  //     //if horizontal switch does not sense cargo and vertical switch senses cargo...
+
+  //       while (horizontalSwitch.Get() == 1){
+  //         conveyorHorizontal.Set(1);
+  //       } //horizontal conveyor will turn on until cargo moves to horizontal sensor position
+
+  //       ScoringCargo();
+  //       //scoring function is called
+
+  //   } else if (cargoLocation == 4){
+  //     //if both horizontal and vertical switch do not sense cargo 
+
+  //       while (horizontalSwitch.Get() == 1){
+  //         conveyorHorizontal.Set(1);
+  //       } //horizontal conveyor will turn on until cargo moves to horizontal sensor position
+
+  //       while (verticalSwitch.Get() == 1){
+  //         conveyorVertical.Set(1);
+
+  //       } //vertical conveyor will turn on until cargo moves to vertical sensor position
+
+  //       ScoringCargo();
+  //       //scoring function is called
+
+  //   } else {
+
+  //       conveyorHorizontal.Set(0);
+  //       conveyorVertical.Set(0);
+
+  //   }
+
+  // }
 
 }
+
+void Robot::DisabledInit() {}
+
+void Robot::DisabledPeriodic() {}
+
+void Robot::TestInit() {}
+
+void Robot::TestPeriodic() {}
 
 void Robot::ScoringCargo(){
   if (gamepad2.GetRawButtonPressed(4)){
@@ -309,209 +525,6 @@ void Robot::ScoringCargo(){
   }
 }
 
-
-void Robot::TeleopPeriodic() {
-  //joysticks
-  // double leftStickY = gamepad.GetRawAxis(1);
-  // double rightStickY = gamepad.GetRawAxis(5);
-
-  //buttons
-  // bool b = gamepad.GetRawButton(2);
-  // bool y = gamepad.GetRawButton(4);
-  // bool x = gamepad.GetRawButton(3);
-
-  // if(b && leftStickY >= 0.05) {
-  //   L1Motor.Set(-leftStickY * 0.5);
-  //   L2Motor.Set(-leftStickY * 0.5);
-  // }
-  // else if(y && leftStickY >= 0.05) {
-  //   L1Motor.Set(-leftStickY);
-  //   L2Motor.Set(-leftStickY);
-  // }
-
-  // if(rightStickY >= 0.05) {
-  //   L1Motor.Set(-rightStickY);
-  //   L2Motor.Set(-rightStickY);
-  // }
-  
-
-  //flywheel test
-  if(gamepad1.GetRawButtonPressed(1)) {
-    //DistanceToRPM(Robot::Limelight());
-    firstRun = Robot::LimelightDistance();
-    secondRun = Robot::LimelightDistance();
-    thirdRun = Robot::LimelightDistance();
-
-    frc::SmartDashboard::PutNumber("Median", Robot::GetMedian(firstRun, secondRun, thirdRun));
-    Robot::DistanceToRPM(Robot::GetMedian(firstRun, secondRun, thirdRun));
-  }
-  else if (gamepad1.GetRawButtonPressed(2)) {
-    //motorVelocity = 2000;
-  }
-  else if(gamepad1.GetRawButtonPressed(3)) {
-    motorVelocity -= 250;
-    
-  }
-  else if (gamepad1.GetRawButtonPressed(4)) {
-    motorVelocity = 0;
-  }
-
-  //Calculated gearing Factor of ~1.846 or so
-  trueVelocity = motorVelocity * 1.9;
-  //NOTE: Setting target velocity = setting target RPM
-  testPIDController.SetReference(-trueVelocity, rev::ControlType::kVelocity);
-    
-
-  //limelight
-  // if(gamepad.GetRawButton(1)) {
-  //     Robot::Limelight();
-  // }
-
-  //actual teleop
-    //Drive + slow mode
-
-  //Left motors
-  if(gamepad2_RTrigger >= 0.1 && (gamepad1_LStick >= 0.1 || gamepad1_LStick <= -0.1)) {
-    leftFront.Set(-gamepad1_LStick * 0.5);
-  }
-  else if(gamepad1_LStick >= 0.1 || gamepad1_LStick <= -0.1) {
-    leftFront.Set(-gamepad1_LStick);
-  }
-  else {
-    leftFront.Set(0);
-  }
-  
-  //Right motors
-  if(gamepad2_RTrigger >= 0.1 && (gamepad1_RStick >= 0.1 || gamepad1_LStick <= -0.1)) {
-    rightFront.Set(-gamepad1_RStick * 0.5);
-  }
-  else if(gamepad1_RStick >= 0.1 || gamepad1_RStick <= -0.1) {
-    rightFront.Set(-gamepad1_RStick);
-  }
-  else {
-    rightFront.Set(0);
-  }
-    
-  //Conveyer deliver to flywheel
-  if (gamepad2.GetRawButtonPressed(3)) {
-    C1Motor.Set(ControlMode::PercentOutput, 1);
-    C2Motor.Set(ControlMode::PercentOutput, 1);
-  }
-  else if (gamepad2_LTrigger) {
-    C1Motor.Set(ControlMode::PercentOutput, 1);
-    C2Motor.Set(ControlMode::PercentOutput, -1);
-  }
-
-  //frc::CameraServer::StartAutomaticCapture();
-
-  // if (gamepad2_AButton){
-  //   nt::NetworkTableInstance::GetDefault().GetTable("limelight")->PutNumber("stream", 1);
-  // } //sets secondary camera stream to the lower right corner of primary camera stream
-
-  // if (gamepad1.GetRawButtonPressed(4) == true){
-  //   nt::NetworkTableInstance::GetDefault().GetTable("limelight")->PutNumber("stream", 2);
-  // } //set primary camera stream to lower right corner of secondary camera stream\\
-
-
-//Code for microswitch
-
-  double cargoLocation;
-
-  if (horizontalSwitch.Get() == 0 && verticalSwitch.Get() == 0){
-    //if both switches sense cargo...
-    
-    cargoLocation = 1;
-
-} else if (horizontalSwitch.Get() == 0 && verticalSwitch.Get() == 1){
-    //if horizontal switch senses cargo, but vertical switch does not sense cargo...
-    
-    cargoLocation = 2;
-
-} else if (horizontalSwitch.Get() == 1 && verticalSwitch.Get() == 0){
-    //if horizontal switch does not sense cargo, but vertical switch does sense cargo...
-    
-    cargoLocation = 3;
-
-} else if (horizontalSwitch.Get() == 1 && verticalSwitch.Get() == 1){
-  //if both horizontal and vertical switch do not sense cargo...
-  
-  cargoLocation = 4;
-
-} else {
-  
-  cargoLocation = 0;
-}
-
-if (gamepad2.GetRawAxis(2) >= 0.1){
-  //if left trigger is pressed...
-  
-  if (cargoLocation == 1){
-    //if both switches sense cargo...
-   
-    conveyorHorizontal.Set(0);
-    conveyorVertical.Set(0);
-    //conveyor motors will not turn on because robot already possesses two cargo
-
-    ScoringCargo();
-    //scoring function is called
-
-  } else if (cargoLocation = 2){
-    //if horizontal switch senses cargo and vertical switch does not sense cargo...
-
-      while (verticalSwitch.Get() == 1){
-        conveyorVertical.Set(1);
-    } //vertical conveyor will turn on until cargo moves to vertical sensor position
-
-      while (horizontalSwitch.Get() == 1){
-        conveyorHorizontal.Set(1);
-      } //horizontal conveyor will turn on until cargo moves to horizontal sensor position
-
-      ScoringCargo();
-      //scoring function is called
-  
-  } else if (cargoLocation = 3){
-    //if horizontal switch does not sense cargo and vertical switch senses cargo...
-
-      while (horizontalSwitch.Get() == 1){
-        conveyorHorizontal.Set(1);
-      } //horizontal conveyor will turn on until cargo moves to horizontal sensor position
-
-      ScoringCargo();
-      //scoring function is called
-
-  } else if (cargoLocation == 4){
-    //if both horizontal and vertical switch do not sense cargo 
-
-      while (horizontalSwitch.Get() == 1){
-        conveyorHorizontal.Set(1);
-      } //horizontal conveyor will turn on until cargo moves to horizontal sensor position
-
-      while (verticalSwitch.Get() == 1){
-        conveyorVertical.Set(1);
-        
-      } //vertical conveyor will turn on until cargo moves to vertical sensor position
-
-      ScoringCargo();
-      //scoring function is called
-
-  } else {
-
-      conveyorHorizontal.Set(0);
-      conveyorVertical.Set(0);
-
-  }
-
-}
-
-}
-
-void Robot::DisabledInit() {}
-
-void Robot::DisabledPeriodic() {}
-
-void Robot::TestInit() {}
-
-void Robot::TestPeriodic() {}
 
 #ifndef RUNNING_FRC_TESTS
 int main() {
