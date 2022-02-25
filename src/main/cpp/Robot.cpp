@@ -44,6 +44,7 @@ void Robot::RobotInit() {
  */
 void Robot::RobotPeriodic() {}
 
+//robot functions
 double Robot::GetMedian(double value1, double value2, double value3) {
  
   if(value1 > value2 && value1 > value3) {
@@ -79,6 +80,13 @@ double Robot::GetMedian(double value1, double value2, double value3) {
   
 }
 
+/*
+* Determines the distance from the limelight's current position to the reflective tape on the goal.
+* It also sends the current distance to the SmartDashboard.
+*
+* Precondition: The reflective tape must be in the limelights POV.
+* Postcondition: Returns the distance from the limelight to the reflective tape (x-axis)
+*/
 double Robot::LimelightDistance() {
     auto inst = nt::NetworkTableInstance::GetDefault();
     auto limelight = inst.GetTable("limelight");
@@ -95,82 +103,54 @@ double Robot::LimelightDistance() {
     
     trueAngle = (34 + targetOffsetAngle_Vertical) * M_PI / 180;
 
-    //should be 38 off the ground, but height is different for testing purposes
-    distanceToHub = (104-60)/(tan(trueAngle)) + (24 - 13);
+    //should be 38 off the ground, but height is different for testing purposes (probably can be deleted)
+
+    //distance = (targetHeight - cameraHeight)/tan (mountingAngle + verticalAngleToTarget)
+    distanceToHub = (104 - 60)/(tan(trueAngle)) + (24 - 13);
 
     frc::SmartDashboard::PutNumber("Distance: ", distanceToHub);
     return distanceToHub;
-    //distance = (targetHeight - cameraHeight)/tan (mountingAngle + verticalAngleToTarget)
 }
 
-// takes distance (in inches) and converts it to a rpm using
-// calculated polynomial function 4.7x^2 - 35.5x + 1891
+//Takes the distance (in inches) and converts it to a RPM using the 
+//calculated polynomial function 4.7x^2 - 35.5x + 1891 (function comes from the graph made from testing data)
 void Robot::DistanceToRPM (double distance) {
-  
   distance = distance/12;
-  motorVelocity = (int)(4.7*(distance*distance) - (35.5*distance) + 1891);
+  motorVelocity = (int)(4.7 * (distance * distance) - (35.5 * distance) + 1891);
 }
 
+//autonomous functions
 
-
-/**
- * This autonomous (along with the chooser code above) shows how to select
- * between different autonomous modes using the dashboard. The sendable chooser
- * code works with the Java SmartDashboard. If you prefer the LabVIEW Dashboard,
- * remove all of the chooser code and uncomment the GetString line to get the
- * auto name from the text box below the Gyro.
- *
- * You can add additional auto modes by adding additional comparisons to the
- * if-else structure below with additional strings. If using the SendableChooser
- * make sure to add them to the chooser code above as well.
- */
-
-void Robot::AutonomousInit() {
-  m_autoSelected = m_chooser.GetSelected();
-  // m_autoSelected = SmartDashboard::GetString("Auto Selector",
-  //     kAutoNameDefault);
-  fmt::print("Auto selected: {}\n", m_autoSelected);
-
-  if (m_autoSelected == kAutoNameCustom) {
-    // Custom Auto goes here
-  } else {
-    // Default Auto goes here
-
-  }
-
-}
-
+//moves the robot the amount specified
 void Robot::encoderDrive(double speed, double leftInches, double rightInches, double timeoutSeconds) {
-  int newLeftTarget;
-  int newRightTarget;
-  double rightPower = speed;
-  double leftPower = speed;
+  //amount the robot will move
+  int newLeftTarget = (int)(leftInches * countsPerInch);
+  int newRightTarget = (int)(rightInches * countsPerInch); 
 
-  newLeftTarget = (int)(leftInches * countsPerInch);
-  newRightTarget = (int)(rightInches * countsPerInch); 
-
+  //resets the encoders 
   leftEncoder.SetPosition(0);
   rightEncoder.SetPosition(0);
 
+  //ensures the motors are not moving before setting the new position
   rightFront.Set(0);
   rightBack.Set(0);
   leftFront.Set(0);
   leftBack.Set(0);
 
+  //sets the position (amount needed to move) to the new targets (distance)
   rightEncoder.SetPosition(newRightTarget);
   leftEncoder.SetPosition(newLeftTarget);
 
-  rightFront.Set(rightPower);
-  leftFront.Set(leftPower);
+  //sets both motors to the specified speed
+  rightFront.Set(speed);
+  leftFront.Set(speed);
 
   //time::reset;
-
-  //insert timer function (while timer is less than seconds, motor is busy)?
-
-  leftFront.Set(leftPower);
-  leftBack.Set(leftPower);
-  rightFront.Set(rightPower);
-  rightBack.Set(rightPower);
+  //insert timer function (while timer is less than seconds, motor is busy)
+  leftFront.Set(speed);
+  leftBack.Set(speed);
+  rightFront.Set(speed);
+  rightBack.Set(speed);
 
   leftEncoder.GetPosition();
   rightEncoder.GetPosition();
@@ -256,6 +236,39 @@ void Robot::flywheel(double speed, double rotations, double timeoutSeconds) {
   //timer::reset;
 
 }
+
+
+
+
+
+
+/**
+ * This autonomous (along with the chooser code above) shows how to select
+ * between different autonomous modes using the dashboard. The sendable chooser
+ * code works with the Java SmartDashboard. If you prefer the LabVIEW Dashboard,
+ * remove all of the chooser code and uncomment the GetString line to get the
+ * auto name from the text box below the Gyro.
+ *
+ * You can add additional auto modes by adding additional comparisons to the
+ * if-else structure below with additional strings. If using the SendableChooser
+ * make sure to add them to the chooser code above as well.
+ */
+
+void Robot::AutonomousInit() {
+  m_autoSelected = m_chooser.GetSelected();
+  // m_autoSelected = SmartDashboard::GetString("Auto Selector",
+  //     kAutoNameDefault);
+  fmt::print("Auto selected: {}\n", m_autoSelected);
+
+  if (m_autoSelected == kAutoNameCustom) {
+    // Custom Auto goes here
+  } else {
+    // Default Auto goes here
+
+  }
+
+}
+
 
 
 
@@ -491,6 +504,51 @@ void Robot::TeleopPeriodic() {
 
 }
 
+//teleop functions (below everything because of trueVelocity)
+void Robot::ScoringCargo(){
+  if (gamepad2.GetRawButtonPressed(4)){
+    //if the Y button to score 1 cargo is pressed...assumes one cargo is already stored in vertical conveyor 
+    flywheelShooter1.Set(trueVelocity);
+    frc::Wait(units::second_t(1));
+    conveyorVertical.Set(1);
+    frc::Wait(units::second_t(3));
+    //turns on flywheel shooter and vertical conveyor then waits for the robot to score a cargo...
+    flywheelShooter1.Set(trueVelocity * 0.75);
+    frc::Wait(units::second_t(0.1));
+    flywheelShooter1.Set(trueVelocity * 0.5);
+    frc::Wait(units::second_t(0.1));
+    flywheelShooter1.Set(trueVelocity * 0.25);
+    frc::Wait(units::second_t(0.1));
+    flywheelShooter1.Set(trueVelocity * 0.1);
+    frc::Wait(units::second_t(0.1));
+    flywheelShooter1.Set(0);
+    conveyorVertical.Set(0);
+    conveyorHorizontal.Set(0);
+    //flywheel shooter and vertical conveyor are turned off 
+  }
+  else if(gamepad2.GetRawButtonPressed(1)){
+    //if the A button to score 2 cargo is pressed...assumes both cargo are already stored in conveyor
+    flywheelShooter1.Set(trueVelocity);
+    frc::Wait(units::second_t(1));
+    conveyorVertical.Set(1);
+    conveyorHorizontal.Set(1);
+    frc::Wait(units::second_t(3));
+
+    //turns on flyhweel shooter, vertical conveyor, and horizontal conveyor then waits for the robot to score both cargo
+    flywheelShooter1.Set(trueVelocity * 0.75);
+    frc::Wait(units::second_t(0.1));
+    flywheelShooter1.Set(trueVelocity * 0.5);
+    frc::Wait(units::second_t(0.1));
+    flywheelShooter1.Set(trueVelocity * 0.25);
+    frc::Wait(units::second_t(0.1));
+    flywheelShooter1.Set(trueVelocity * 0.1);
+    frc::Wait(units::second_t(0.1));
+    flywheelShooter1.Set(0);
+    conveyorVertical.Set(0);
+    conveyorHorizontal.Set(0);
+  }
+}
+
 void Robot::DisabledInit() {}
 
 void Robot::DisabledPeriodic() {}
@@ -498,33 +556,6 @@ void Robot::DisabledPeriodic() {}
 void Robot::TestInit() {}
 
 void Robot::TestPeriodic() {}
-
-void Robot::ScoringCargo(){
-  if (gamepad2.GetRawButtonPressed(4)){
-    //if the Y button to score 1 cargo is pressed...assumes one cargo is already stored in vertical conveyor 
-    flywheelShooter1.Set(1);
-    //possibly add a wait command as flywheel rpm increases to shooting speed?
-    conveyorVertical.Set(1);
-    frc::Wait(units::second_t(3));
-    //turns on flywheel shooter and vertical conveyor then waits for the robot to score a cargo...
-    flywheelShooter1.Set(0);
-    conveyorVertical.Set(0);
-    //flywheel shooter and vertical conveyor are turned off 
-  }
-  if (gamepad2.GetRawButtonPressed(1)){
-    //if the A button to score 2 cargo is pressed...assumes both cargo are already stored in conveyor
-    flywheelShooter1.Set(1);
-    //possibly add a wait command as flywheel rpm increases to shooting speed
-    conveyorVertical.Set(1);
-    conveyorHorizontal.Set(1);
-    frc::Wait(units::second_t(3));
-    //turns on flyhweel shooter, vertical conveyor, and horizontal conveyor then waits for the robot to score both cargo
-    flywheelShooter1.Set(0);
-    conveyorVertical.Set(0);
-    //flywheel shooter, vertical conveyor, and horizontal conveyor are all turned off
-  }
-}
-
 
 #ifndef RUNNING_FRC_TESTS
 int main() {
