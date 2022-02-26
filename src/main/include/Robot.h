@@ -54,15 +54,20 @@ class Robot : public frc::TimedRobot {
 
   //autonomous functions
   void encoderDrive(double speed, double leftInches, double rightInches, double timeoutSeconds);
-  void horizontalConveyor(double speed, double rotations, double timeoutSeconds);
-  void verticalConveyor(double speed, double rotations, double timeoutSeconds);
+  // void horizontalConveyor(double speed, double rotations, double timeoutSeconds);
+  // void verticalConveyor(double speed, double rotations, double timeoutSeconds);
   void flywheel(double speed, double rotations, double timeoutSeconds);
   void turnDrive(double speed, double degrees, double timeoutSeconds);
+  void shoot(); //needs to be finished
+  void intake(); //needs to be finished
 
   //CIMs  
   TalonSRX conveyorVerticalLeft{20};
   TalonSRX conveyorVerticalRight{19};
   TalonSRX horizontalConveyor{18};
+  TalonSRX intakeMotor{21};
+  TalonSRX C1Motor{10};
+  TalonSRX C2Motor{11};
 
   //pidcontroller  
   rev::SparkMaxPIDController testPIDController = flywheelShooter1.GetPIDController();
@@ -76,8 +81,8 @@ class Robot : public frc::TimedRobot {
   rev::CANSparkMax rightBack {11, rev::CANSparkMax::MotorType::kBrushless};
   rev::CANSparkMax leftFront {12, rev::CANSparkMax::MotorType::kBrushless};
   rev::CANSparkMax leftBack {13, rev::CANSparkMax::MotorType::kBrushless}; 
-  rev::CANSparkMax conveyorHorizontal {14, rev::CANSparkMax::MotorType::kBrushless};
-  rev::CANSparkMax conveyorVertical {15, rev::CANSparkMax::MotorType::kBrushless};  
+  //rev::CANSparkMax conveyorHorizontal {14, rev::CANSparkMax::MotorType::kBrushless};
+  //rev::CANSparkMax conveyorVertical {15, rev::CANSparkMax::MotorType::kBrushless};  
   rev::CANSparkMax flywheelShooter1 {16, rev::CANSparkMax::MotorType::kBrushless};  
 
   //follows flywheelShooter1
@@ -86,8 +91,6 @@ class Robot : public frc::TimedRobot {
   //encoders
   rev::SparkMaxRelativeEncoder leftEncoder = leftFront.GetEncoder();
   rev::SparkMaxRelativeEncoder rightEncoder = rightFront.GetEncoder();
-  rev::SparkMaxRelativeEncoder verticalConveyorEncoder = conveyorVertical.GetEncoder();
-  rev::SparkMaxRelativeEncoder horizontalConveyorEncoder = conveyorHorizontal.GetEncoder();
   rev::SparkMaxRelativeEncoder flywheelEncoder = flywheelShooter1.GetEncoder();
 
   //Switch declarations

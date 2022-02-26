@@ -119,6 +119,45 @@ void Robot::DistanceToRPM (double distance) {
   motorVelocity = (int)(4.7 * (distance * distance) - (35.5 * distance) + 1891);
 }
 
+//needs fine tuning and double checking
+void Robot::limelightAlign() {
+  //remakes the limelight data table
+  auto inst = nt::NetworkTableInstance::GetDefault();
+  auto limelight = inst.GetTable("limelight");
+  
+  //needs to be configured 
+  float Kp = 0.1f; 
+  float min_command = 0.05f;
+  double leftChange, rightChange;
+  
+  //current speed of the motors
+  double leftSpeed = leftFront.GetAppliedOutput();
+  double rightSpeed = rightFront.GetAppliedOutput();
+
+  targetOffsetAngle_Horizontal = limelight->GetNumber("tx",0.0);
+
+  //59.6 horizontal degrees FOV
+  if(gamepad1.GetRawButton(1)) {
+    //3 & -3 are in degrees
+    if(targetOffsetAngle_Horizontal > 3) {
+      leftChange = -(kP * targetOffsetAngle_Horizontal + 0.05);
+      rightChange = kP * targetOffsetAngle_Horizontal + 0.05;
+
+      leftSpeed -= leftChange;      
+      rightSpeed += rightChange;
+    }
+    else if(targetOffsetAngle_Horizontal < -3) {
+      leftChange = -(kP * targetOffsetAngle_Horizontal - 0.05);
+      rightChange = kP * targetOffsetAngle_Horizontal - 0.05;
+
+      leftSpeed += leftChange;
+      rightSpeed -= rightChange;
+    }
+
+  }
+
+}
+
 //autonomous functions
 
 //moves the robot the amount specified
@@ -176,6 +215,34 @@ void Robot::turnDrive(double speed, double degrees, double timeoutSeconds) {
   }
 }
 
+//combine the horizontal and vertical conveyor belt functions
+//let the flywheel run for 1 seconds before turning everything else on, then turn everything off
+void Robot::shoot() {
+  DistanceToRPM(LimelightDistance());
+  limelightAlign();
+
+  trueVelocity = motorVelocity * 1.9;
+
+  testPIDController.SetReference(-trueVelocity, rev::ControlType::kVelocity);
+
+  frc::Wait(units::second_t(1));
+
+  conveyorVerticalLeft.Set(ControlMode::PercentOutput, 1);
+  conveyorVerticalRight.Set(ControlMode::PercentOutput, 1);
+  horizontalConveyor.Set(ControlMode::PercentOutput, 1);
+
+  conveyorVerticalLeft.Set(ControlMode::PercentOutput, 0);
+  conveyorVerticalRight.Set(ControlMode::PercentOutput, 0);
+  horizontalConveyor.Set(ControlMode::PercentOutput, 0);
+
+
+}
+
+//auto method to intake the ball (get it almost to the flywheel shooter)
+void Robot::intake() {
+
+}
+
 
 // void Robot::horizontalConveyor(double speed, double rotations, double timeoutSeconds) {
 //   int newRotationsTarget;
@@ -198,25 +265,25 @@ void Robot::turnDrive(double speed, double degrees, double timeoutSeconds) {
 
 // }
 
-void Robot::verticalConveyor(double speed, double rotations, double timeoutSeconds) {
-  int newRotationsTarget;
-  double conveyorSpeed = speed;
-  newRotationsTarget = (int)(rotations * countsPerRev);
+// void Robot::verticalConveyor(double speed, double rotations, double timeoutSeconds) {
+//   int newRotationsTarget;
+//   double conveyorSpeed = speed;
+//   newRotationsTarget = (int)(rotations * countsPerRev);
   
-  verticalConveyorEncoder.SetPosition(0);
+//   verticalConveyorEncoder.SetPosition(0);
 
-  verticalConveyorEncoder.SetPosition(newRotationsTarget);
+//   verticalConveyorEncoder.SetPosition(newRotationsTarget);
 
-  conveyorVertical.Set(conveyorSpeed);
+//   conveyorVertical.Set(conveyorSpeed);
   
   //timer::reset;
   
   //insert timer function (while timer is less than seconds, motor is busy)?
 
-  conveyorVertical.Set(0);
+//   conveyorVertical.Set(0);
 
-  verticalConveyorEncoder.GetPosition();
-}
+//   verticalConveyorEncoder.GetPosition();
+// }
 
 
 void Robot::flywheel(double speed, double rotations, double timeoutSeconds) {
@@ -280,7 +347,7 @@ void Robot::AutonomousPeriodic() {
   encoderDrive(1, 120, 120, 2);
   turnDrive(1, 180, 2);
   //horizontalConveyor(1, 5, 3);   //rotations TBD
-  verticalConveyor(1, 5, 3);   //rotations TBD
+  //verticalConveyor(1, 5, 3);   //rotations TBD
   flywheel(1, 6, 3); //rotations TBD
   encoderDrive(1, 6, 12, 2); //turn 180 degrees? will need testing 
 
@@ -381,25 +448,41 @@ void Robot::TeleopPeriodic() {
   // }
   
   // //Right motors
-  // if(gamepad2_RTrigger >= 0.1 && (gamepad1_RStick >= 0.1 || gamepad1_LStick <= -0.1)) {
-  //   rightFront.Set(-gamepad1_RStick * 0.5);
-  // }
-  // else if(gamepad1_RStick >= 0.1 || gamepad1_RStick <= -0.1) {
-  //   rightFront.Set(-gamepad1_RStick);
-  // }
-  // else {
-  //   rightFront.Set(0);
-  // }
+  //   if(gamepad2_RTrigger >= 0.1 && (gamepad1_RStick >= 0.1 || gamepad1_LStick <= -0.1)) {
+  //      rightFront.Set(-gamepad1_RStick * 0.5);
+  //   }
+  //  else if(gamepad1_RStick >= 0.1 || gamepad1_RStick <= -0.1) {
+  //     rightFront.Set(-gamepad1_RStick);
+  //   }
+  //   else {
+  //     rightFront.Set(0);
+  //   }
+
+  //updated drive code after preliminary testing 
+
+ if(gamepad1.GetRawAxis(1) <= 0.1 || gamepad1.GetRawAxis(1) >= 0.1){
+   leftFront.Set(gamepad1.GetRawAxis(1));
+ }
+ else {
+   leftFront.Set(0);
+ }
+
+ if(gamepad1.GetRawAxis(5) <= 0.1 || gamepad1.GetRawAxis(5) >= 0.1){
+   rightFront.Set(-gamepad1.GetRawAxis(5));
+ }
+ else {
+   rightFront.Set(0);
+ }
     
   //Conveyer deliver to flywheel
-  // if (gamepad2.GetRawButtonPressed(3)) {
-  //   C1Motor.Set(ControlMode::PercentOutput, 1);
-  //   C2Motor.Set(ControlMode::PercentOutput, 1);
-  // }
-  // else if (gamepad2_LTrigger) {
-  //   C1Motor.Set(ControlMode::PercentOutput, 1);
-  //   C2Motor.Set(ControlMode::PercentOutput, -1);
-  // }
+   if (gamepad2.GetRawButtonPressed(3)) {
+     C1Motor.Set(ControlMode::PercentOutput, 1);
+     C2Motor.Set(ControlMode::PercentOutput, 1);
+   }
+   else if (gamepad2_LTrigger) {
+     C1Motor.Set(ControlMode::PercentOutput, 1);
+     C2Motor.Set(ControlMode::PercentOutput, -1);
+   }
 
   //frc::CameraServer::StartAutomaticCapture();
 
@@ -510,7 +593,8 @@ void Robot::ScoringCargo(){
     //if the Y button to score 1 cargo is pressed...assumes one cargo is already stored in vertical conveyor 
     flywheelShooter1.Set(trueVelocity);
     frc::Wait(units::second_t(1));
-    conveyorVertical.Set(1);
+    conveyorVerticalLeft.Set(ControlMode::PercentOutput, 1);
+    conveyorVerticalRight.Set(ControlMode::PercentOutput, 1);   
     frc::Wait(units::second_t(3));
     //turns on flywheel shooter and vertical conveyor then waits for the robot to score a cargo...
     flywheelShooter1.Set(trueVelocity * 0.75);
@@ -522,16 +606,19 @@ void Robot::ScoringCargo(){
     flywheelShooter1.Set(trueVelocity * 0.1);
     frc::Wait(units::second_t(0.1));
     flywheelShooter1.Set(0);
-    conveyorVertical.Set(0);
-    conveyorHorizontal.Set(0);
+
+    conveyorVerticalRight.Set(ControlMode::PercentOutput, 0);
+    conveyorVerticalLeft.Set(ControlMode::PercentOutput, 0); 
+    horizontalConveyor.Set(ControlMode::PercentOutput, 0);
     //flywheel shooter and vertical conveyor are turned off 
   }
   else if(gamepad2.GetRawButtonPressed(1)){
     //if the A button to score 2 cargo is pressed...assumes both cargo are already stored in conveyor
     flywheelShooter1.Set(trueVelocity);
     frc::Wait(units::second_t(1));
-    conveyorVertical.Set(1);
-    conveyorHorizontal.Set(1);
+    conveyorVerticalLeft.Set(ControlMode::PercentOutput, 1);
+    conveyorVerticalRight.Set(ControlMode::PercentOutput, 1);
+    horizontalConveyor.Set(ControlMode::PercentOutput, 1);
     frc::Wait(units::second_t(3));
 
     //turns on flyhweel shooter, vertical conveyor, and horizontal conveyor then waits for the robot to score both cargo
@@ -543,9 +630,11 @@ void Robot::ScoringCargo(){
     frc::Wait(units::second_t(0.1));
     flywheelShooter1.Set(trueVelocity * 0.1);
     frc::Wait(units::second_t(0.1));
+
     flywheelShooter1.Set(0);
-    conveyorVertical.Set(0);
-    conveyorHorizontal.Set(0);
+    conveyorVerticalRight.Set(ControlMode::PercentOutput, 0);
+    conveyorVerticalLeft.Set(ControlMode::PercentOutput, 0);
+    horizontalConveyor.Set(ControlMode::PercentOutput, 0);
   }
 }
 
