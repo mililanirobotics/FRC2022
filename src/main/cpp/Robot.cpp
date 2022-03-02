@@ -7,7 +7,6 @@
 #include <fmt/core.h>
 
 #include <frc/smartdashboard/SmartDashboard.h>
-#include <ctime> 
 #include <time.h>
 
 //limelight stuff
@@ -19,7 +18,7 @@
 #include "wpi/span.h"
 #include <Math.h>
 
-//robot functions
+//limelight functions
 double Robot::GetMedian(double value1, double value2, double value3) {
  
   if(value1 > value2 && value1 > value3) {
@@ -258,7 +257,7 @@ void Robot::shoot() {
 void Robot::intake() {
 }
 
-void Robot::flywheel(double speed, double rotations, double timeoutSeconds) {
+/*void Robot::flywheel(double speed, double rotations, double timeoutSeconds) {
   int newRotationsTarget;
   double flywheelSpeed = speed;
   newRotationsTarget = (int)(rotations * countsPerRev);
@@ -273,8 +272,7 @@ void Robot::flywheel(double speed, double rotations, double timeoutSeconds) {
   //insert timer function (while timer is less than seconds, motor is busy)?
 
   //timer::reset;
-
-}
+}*/
 
 
 void Robot::RobotInit() {
@@ -411,35 +409,6 @@ void Robot::TeleopPeriodic() {
  else {
    rightFront.Set(0);
  }
-
-  //Conveyer deliver to flywheel
-   if (gamepad2.GetRawButtonPressed(3)) {
-     C1Motor.Set(ControlMode::PercentOutput, 1);
-     C2Motor.Set(ControlMode::PercentOutput, 1);
-   }
-   else if (gamepad2_LTrigger) {
-     C1Motor.Set(ControlMode::PercentOutput, 1);
-     C2Motor.Set(ControlMode::PercentOutput, -1);
-   }
-
-   //flywheel activation for purposes of testing
-
-   if(gamepad2.GetRawAxis(3)>= 0.1){
-     flywheelShooter1.Set(0.75);
-
-   }else {
-     flywheelShooter1.Set(0);
-   }
-   
-
-   if (gamepad2_AButton){
-    nt::NetworkTableInstance::GetDefault().GetTable("limelight")->PutNumber("stream", 1);
-   } //sets secondary camera stream to the lower right corner of primary camera stream
-
-   if (gamepad1.GetRawButtonPressed(4) == true){
-   nt::NetworkTableInstance::GetDefault().GetTable("limelight")->PutNumber("stream", 2);
-  } //set primary camera stream to lower right corner of secondary camera stream
-
 
 //Code for microswitch
 

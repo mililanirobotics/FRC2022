@@ -54,7 +54,7 @@ class Robot : public frc::TimedRobot {
 
   //autonomous functions
   void encoderDrive(double speed, double leftInches, double rightInches, double timeoutSeconds);
-  void flywheel(double speed, double rotations, double timeoutSeconds);
+  //void flywheel(double speed, double rotations, double timeoutSeconds);
   void turnDrive(double speed, double degrees, double timeoutSeconds);
   void shoot(); //needs to be finished
   void intake(); //needs to be finished
