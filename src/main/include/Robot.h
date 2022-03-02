@@ -118,22 +118,7 @@ class Robot : public frc::TimedRobot {
   double distanceToHub;
   double firstRun, secondRun, thirdRun;
 
-  //Gamepad assignments:
-
-  //Controller 1
-  double gamepad1_LStick = gamepad1.GetRawAxis(1);
-  double gamepad1_RStick = gamepad1.GetRawAxis(5);
-  double gamepad1_RTrigger = gamepad1.GetRawAxis(3);
-
-  //Controller 2
-  bool gamepad2_YButton = gamepad2.GetRawButtonPressed(4);
-  bool gamepad2_XButton = gamepad2.GetRawButtonPressed(3);
-  bool gamepad2_AButton = gamepad2.GetRawButtonPressed(1);
-  double gamepad2_LTrigger = gamepad2.GetRawAxis(2);
-  double gamepad2_RTrigger = gamepad2.GetRawAxis(3);
-
   //PID
-
   //kP = 0.000001, kFF 0.0001695
   //Change the feed forward to adjust settling below or above the set point
   //Tuning a PID for future reference:  
