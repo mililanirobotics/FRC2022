@@ -54,8 +54,6 @@ class Robot : public frc::TimedRobot {
 
   //autonomous functions
   void encoderDrive(double speed, double leftInches, double rightInches, double timeoutSeconds);
-  // void horizontalConveyor(double speed, double rotations, double timeoutSeconds);
-  // void verticalConveyor(double speed, double rotations, double timeoutSeconds);
   void flywheel(double speed, double rotations, double timeoutSeconds);
   void turnDrive(double speed, double degrees, double timeoutSeconds);
   void shoot(); //needs to be finished
@@ -80,9 +78,7 @@ class Robot : public frc::TimedRobot {
   rev::CANSparkMax rightFront {10, rev::CANSparkMax::MotorType::kBrushless};
   rev::CANSparkMax rightBack {11, rev::CANSparkMax::MotorType::kBrushless};
   rev::CANSparkMax leftFront {12, rev::CANSparkMax::MotorType::kBrushless};
-  rev::CANSparkMax leftBack {13, rev::CANSparkMax::MotorType::kBrushless}; 
-  //rev::CANSparkMax conveyorHorizontal {14, rev::CANSparkMax::MotorType::kBrushless};
-  //rev::CANSparkMax conveyorVertical {15, rev::CANSparkMax::MotorType::kBrushless};  
+  rev::CANSparkMax leftBack {13, rev::CANSparkMax::MotorType::kBrushless};  
   rev::CANSparkMax flywheelShooter1 {16, rev::CANSparkMax::MotorType::kBrushless};  
 
   //follows flywheelShooter1
