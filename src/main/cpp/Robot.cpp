@@ -195,35 +195,37 @@ void Robot::encoderDrive(double speed, double leftInches, double rightInches, do
   rightEncoder.GetPosition();
   }
 
-void Robot::turnDrive(double speed, double degrees, double timeoutSeconds) {
-  int newLeftTarget;
-  int newRightTarget;
-  double rightPower = speed;
-  double leftPower = speed;
+// void Robot::turnDrive(double speed, double degrees, double timeoutSeconds) {
+//   int newLeftTarget;
+//   int newRightTarget;
+//   double rightPower = speed;
+//   double leftPower = speed;
 
-  if (degrees > 0) {
-    newLeftTarget = (int)(degreesToInches * countsPerInch);
-    newRightTarget = -(int)(degreesToInches * countsPerInch);
-    rightPower = -speed;
-    leftPower = speed;
+//   if (degrees > 0) {
+//     newLeftTarget = (int)(degreesToInches * countsPerInch);
+//     newRightTarget = -(int)(degreesToInches * countsPerInch);
+//     rightPower = -speed;
+//     leftPower = speed;
 
-  } else{
-    newLeftTarget = -(int)(degreesToInches * countsPerInch);
-    newRightTarget = (int)(degreesToInches * countsPerInch);
-    rightPower = speed;
-    leftPower = -speed;
-  }
-}
+//   } else{
+//     newLeftTarget = -(int)(degreesToInches * countsPerInch);
+//     newRightTarget = (int)(degreesToInches * countsPerInch);
+//     rightPower = speed;
+//     leftPower = -speed;
+//   }
+// }
 
-//combine the horizontal and vertical conveyor belt functions
-//let the flywheel run for 1 seconds before turning everything else on, then turn everything off
+//turn drive method commented out for testing purposes ^
+
+
 void Robot::shoot() {
   DistanceToRPM(LimelightDistance());
   limelightAlign();
 
-  trueVelocity = motorVelocity * 1.9;
+  double trueVelocity = motorVelocity * 1.9;
 
   testPIDController.SetReference(-trueVelocity, rev::ControlType::kVelocity);
+ 
 
   frc::Wait(units::second_t(1));
 
@@ -240,6 +242,7 @@ void Robot::shoot() {
 
 //auto method to intake the ball (get it almost to the flywheel shooter)
 void Robot::intake() {
+
 
 }
 
@@ -344,12 +347,13 @@ void Robot::AutonomousPeriodic() {
   if (m_autoSelected == kAutoNameCustom) {
     // Custom Auto goes here
   //Telemetry.addData("Status,", "Resetting Encoders");
-  encoderDrive(1, 120, 120, 2);
-  turnDrive(1, 180, 2);
+  //encoderDrive(1, 120, 120, 2);
   //horizontalConveyor(1, 5, 3);   //rotations TBD
   //verticalConveyor(1, 5, 3);   //rotations TBD
-  flywheel(1, 6, 3); //rotations TBD
-  encoderDrive(1, 6, 12, 2); //turn 180 degrees? will need testing 
+  // flywheel(1, 6, 3); //rotations TBD
+  // encoderDrive(1, 6, 12, 2); //turn 180 degrees? will need testing 
+
+  //above autonomous code is commented out for tele-op testing purposes
 
 
   } else {
@@ -369,7 +373,7 @@ void Robot::TeleopPeriodic() {
     rightSolenoid.Toggle();
     leftSolenoid.Toggle();
   }
-  else if(gamepad1.GetRawButtonPressed(2)) {
+  else if(gamepad1.GetRawButtonPressed(2)) {  
     rightSolenoid.Set(frc::DoubleSolenoid::Value::kOff);
     leftSolenoid.Set(frc::DoubleSolenoid::Value::kOff);
   }
@@ -378,15 +382,15 @@ void Robot::TeleopPeriodic() {
 
 
   //joysticks
-  // double leftStickY = gamepad.GetRawAxis(1);
-  // double rightStickY = gamepad.GetRawAxis(5);
+  double leftStickY = gamepad1.GetRawAxis(1);
+  double rightStickY = gamepad1.GetRawAxis(5);
 
   //buttons
-  // bool b = gamepad.GetRawButton(2);
-  // bool y = gamepad.GetRawButton(4);
-  // bool x = gamepad.GetRawButton(3);
+   bool b = gamepad2.GetRawButton(2);
+   bool y = gamepad2.GetRawButton(4);
+   bool x = gamepad2.GetRawButton(3);
 
-  // if(b && leftStickY >= 0.05) {
+  //  if(b && leftStickY >= 0.05) {
   //   L1Motor.Set(-leftStickY * 0.5);
   //   L2Motor.Set(-leftStickY * 0.5);
   // }
@@ -433,30 +437,6 @@ void Robot::TeleopPeriodic() {
   // //     Robot::Limelight();
   // // }
 
-  // //actual teleop
-  //   //Drive + slow mode
-
-  // //Left motors
-  // if(gamepad2_RTrigger >= 0.1 && (gamepad1_LStick >= 0.1 || gamepad1_LStick <= -0.1)) {
-  //   leftFront.Set(-gamepad1_LStick * 0.5);
-  // }
-  // else if(gamepad1_LStick >= 0.1 || gamepad1_LStick <= -0.1) {
-  //   leftFront.Set(-gamepad1_LStick);
-  // }
-  // else {
-  //   leftFront.Set(0);
-  // }
-  
-  // //Right motors
-  //   if(gamepad2_RTrigger >= 0.1 && (gamepad1_RStick >= 0.1 || gamepad1_LStick <= -0.1)) {
-  //      rightFront.Set(-gamepad1_RStick * 0.5);
-  //   }
-  //  else if(gamepad1_RStick >= 0.1 || gamepad1_RStick <= -0.1) {
-  //     rightFront.Set(-gamepad1_RStick);
-  //   }
-  //   else {
-  //     rightFront.Set(0);
-  //   }
 
   //updated drive code after preliminary testing 
 
@@ -473,7 +453,7 @@ void Robot::TeleopPeriodic() {
  else {
    rightFront.Set(0);
  }
-    
+
   //Conveyer deliver to flywheel
    if (gamepad2.GetRawButtonPressed(3)) {
      C1Motor.Set(ControlMode::PercentOutput, 1);
@@ -484,15 +464,23 @@ void Robot::TeleopPeriodic() {
      C2Motor.Set(ControlMode::PercentOutput, -1);
    }
 
-  //frc::CameraServer::StartAutomaticCapture();
+   //flywheel activation for purposes of testing
 
-  // if (gamepad2_AButton){
-  //   nt::NetworkTableInstance::GetDefault().GetTable("limelight")->PutNumber("stream", 1);
-  // } //sets secondary camera stream to the lower right corner of primary camera stream
+   if(gamepad2.GetRawAxis(3)>= 0.1){
+     flywheelShooter1.Set(0.75);
 
-  // if (gamepad1.GetRawButtonPressed(4) == true){
-  //   nt::NetworkTableInstance::GetDefault().GetTable("limelight")->PutNumber("stream", 2);
-  // } //set primary camera stream to lower right corner of secondary camera stream\\
+   }else {
+     flywheelShooter1.Set(0);
+   }
+   
+
+   if (gamepad2_AButton){
+    nt::NetworkTableInstance::GetDefault().GetTable("limelight")->PutNumber("stream", 1);
+   } //sets secondary camera stream to the lower right corner of primary camera stream
+
+   if (gamepad1.GetRawButtonPressed(4) == true){
+   nt::NetworkTableInstance::GetDefault().GetTable("limelight")->PutNumber("stream", 2);
+  } //set primary camera stream to lower right corner of secondary camera stream
 
 
 //Code for microswitch
@@ -611,7 +599,7 @@ void Robot::ScoringCargo(){
     conveyorVerticalLeft.Set(ControlMode::PercentOutput, 0); 
     horizontalConveyor.Set(ControlMode::PercentOutput, 0);
     //flywheel shooter and vertical conveyor are turned off 
-  }
+  } 
   else if(gamepad2.GetRawButtonPressed(1)){
     //if the A button to score 2 cargo is pressed...assumes both cargo are already stored in conveyor
     flywheelShooter1.Set(trueVelocity);
