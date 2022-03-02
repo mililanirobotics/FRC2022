@@ -185,18 +185,20 @@ if (degrees > 0) {
 
 void Robot::shoot() {
   DistanceToRPM(LimelightDistance());
-  limelightAlign();
+  limelightAlign(); //comment out for testing because it probably doesn't work
 
-  double trueVelocity = motorVelocity * 1.9;
+  double trueVelocity = motorVelocity * 2.123;
 
   testPIDController.SetReference(-trueVelocity, rev::ControlType::kVelocity);
  
 
-  frc::Wait(units::second_t(1));
+  frc::Wait(units::second_t(3));
 
   conveyorVerticalLeft.Set(ControlMode::PercentOutput, 1);
   conveyorVerticalRight.Set(ControlMode::PercentOutput, 1);
   horizontalConveyor.Set(ControlMode::PercentOutput, 1);
+
+  frc::Wait(units::second_t(5));
 
   conveyorVerticalLeft.Set(ControlMode::PercentOutput, 0);
   conveyorVerticalRight.Set(ControlMode::PercentOutput, 0);
@@ -428,10 +430,10 @@ void Robot::AutonomousPeriodic() {
   if (m_autoSelected == kAutoNameCustom) {
     // Custom Auto goes here
   //Telemetry.addData("Status,", "Resetting Encoders");
-  //encoderDrive(1, 120, 120, 2);
+  encoderDrive(1, 72, 72, 2);
   // flywheel(1, 6, 3); //rotations TBD
   // encoderDrive(1, 6, 12, 2); //turn 180 degrees? will need testing 
-
+  shoot();
   //above autonomous code is commented out for tele-op testing purposes
 
 
