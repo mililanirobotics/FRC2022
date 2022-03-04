@@ -207,34 +207,44 @@ void Robot::shoot() {
 
 void Robot::calculateRotateValue(double targetAngle, double distance, double speed) {
 
+  gyro.Calibrate();
+
   double gyroAngle = gyro.GetAngle(); 
   double error = targetAngle-gyroAngle;
   double speedFactor = error * 0.2; //arbitrary number (to be tested)
-
   double targetDistance = distance * countsPerInch;
 
-    if (leftEncoder < targetDistance || rightEncoder < targetDistance){
-        if (error > 0 ) {
-          leftFront.Set(speed+speedFactor);
-        } else {
-          leftFront.Set(speed);
-        }
+  double averageActualDistance = (leftEncoder.GetDistance() + rightEncoder.GetDistance())/2;
+  double speedChange = averageActualDistance/targetDistance;
 
-        if (error < 0) {
-          rightFront.Set(speed + speedFactor);
-        }else{
-          rightFront.Set(speed);
+    if (leftEncoder < targetDistance && rightEncoder < targetDistance){
+
+      if (leftEncoder >= (1/2) * targetDistance || rightEncoder >= (1/2) * targetDistance){
+        speed *=  (1 - speedChange);
+        leftFront.Set(speed);
+        rightFront.Set(speed);
+      } else {
+        leftFront.Set(speed);
+        rightFront.Set(speed);
+      }
+
+          if (error > 0 ) {
+            leftFront.Set(speed+speedFactor);
+          } else {
+            leftFront.Set(speed);
+          }
+
+          if (error < 0) {
+            rightFront.Set(speed + speedFactor);
+          }else{
+            rightFront.Set(speed);
+          }
         }
-        if(leftEncoder >= (3/4) targetDistance || rightEncoder >= (3/4) targetDistance){
-          rightFront.Set(speed * 0.2); //arbitrary number (to be tested)
-          leftFront.Set(speed * 0.2);
+        else {
+          rightFront.Set(0);
+          leftFront.Set(0);
         }
-        else{
-          leftFront.Set(speed);
-          rightFront.Set(speed);
-        }
-        }
-        }
+      }
     }
 }
 
