@@ -205,6 +205,39 @@ void Robot::shoot() {
   horizontalConveyor.Set(ControlMode::PercentOutput, 0);
 }
 
+void Robot::calculateRotateValue(double targetAngle, double distance, double speed) {
+
+  double gyroAngle = gyro.GetAngle(); 
+  double error = targetAngle-gyroAngle;
+  double speedFactor = error * 0.2; //arbitrary number (to be tested)
+
+  double targetDistance = distance * countsPerInch;
+
+    if (leftEncoder < targetDistance || rightEncoder < targetDistance){
+        if (error > 0 ) {
+          leftFront.Set(speed+speedFactor);
+        } else {
+          leftFront.Set(speed);
+        }
+
+        if (error < 0) {
+          rightFront.Set(speed + speedFactor);
+        }else{
+          rightFront.Set(speed);
+        }
+        if(leftEncoder >= (3/4) targetDistance || rightEncoder >= (3/4) targetDistance){
+          rightFront.Set(speed * 0.2); //arbitrary number (to be tested)
+          leftFront.Set(speed * 0.2);
+        }
+        else{
+          leftFront.Set(speed);
+          rightFront.Set(speed);
+        }
+        }
+        }
+    }
+}
+
 //auto method to intake the ball (get it almost to the flywheel shooter)
 void Robot::intake() {
 }
@@ -430,12 +463,13 @@ void Robot::AutonomousPeriodic() {
   if (m_autoSelected == kAutoNameCustom) {
     // Custom Auto goes here
   //Telemetry.addData("Status,", "Resetting Encoders");
+  calculateRotateValue (0, 72, 72, 1);
+
   encoderDrive(1, 72, 72, 2);
   // flywheel(1, 6, 3); //rotations TBD
   // encoderDrive(1, 6, 12, 2); //turn 180 degrees? will need testing 
   shoot();
   //above autonomous code is commented out for tele-op testing purposes
-
 
   } else {
     // Default Auto goes here

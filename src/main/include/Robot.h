@@ -30,7 +30,7 @@
 
 //gyro
 #include <frc/ADXRS450_Gyro.h>
-
+frc::ADXRS450_Gyro gyro;
 
 class Robot : public frc::TimedRobot {
  public:
@@ -51,6 +51,7 @@ class Robot : public frc::TimedRobot {
   void DistanceToRPM(double distance);
   void limelightAlign();
   void ScoringCargo();
+  void driveStraight();
 
   //autonomous functions
   void encoderDrive(double speed, double leftInches, double rightInches, double timeoutSeconds);
@@ -59,6 +60,7 @@ class Robot : public frc::TimedRobot {
   void shoot(); //needs to be finished
   void intake(); //needs to be finished
   void MicroswitchIntake();
+  void calculateRotateValue(double targetAngle, double distance, double speed);
   //CIMs  
   TalonSRX conveyorVerticalLeft{20};
   TalonSRX conveyorVerticalRight{19};
