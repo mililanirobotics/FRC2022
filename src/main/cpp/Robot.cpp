@@ -2,39 +2,60 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
+
 #include "Robot.h"
+#include "Functions.h"
 
 #include <fmt/core.h>
 #include <units/time.h>
 
 #include <frc/smartdashboard/SmartDashboard.h>
+#include <ctime> 
+#include <time.h>
+
+//limelight stuff
+#include "frc/smartdashboard/Smartdashboard.h"
+#include "networktables/NetworkTable.h"
+#include "networktables/NetworkTableInstance.h"
+#include "networktables/NetworkTableEntry.h"
+#include "networktables/NetworkTableValue.h"
+#include "wpi/span.h"
+#include <Math.h>
 
 void Robot::RobotInit() {
   m_chooser.SetDefaultOption(kAutoNameDefault, kAutoNameDefault);
   m_chooser.AddOption(kAutoNameCustom, kAutoNameCustom);
   frc::SmartDashboard::PutData("Auto Modes", &m_chooser);
 
-  // test1.Follow(test);
-  //encoder1.SetPositionConversionFactor(42);
-  testPIDController.SetP(kP);
-  testPIDController.SetFF(kFF);
-  //testPIDController.SetD(kD);
-  //testPIDController.SetI(kI);
+  flywheelShooter2.Follow(flywheelShooter1);
+  flywheelPID.SetP(kP);
+  flywheelPID.SetFF(kFF);
 
-  
-  
-  
+  leftBack.Follow(leftFront);
+  rightBack.Follow(rightFront);
+
+  leftEncoder.SetPositionConversionFactor(42);
+  rightEncoder.SetPositionConversionFactor(42);
+
+  gyro.Calibrate();
 }
+
 
 /**
  * This function is called every robot packet, no matter the mode. Use
  * this for items like diagnostics that you want ran during disabled,
- * autonomous, teleoperated an  d test.
+ * autonomous, teleoperated and test.
  *
  * <p> This runs after the mode specific periodic functions, but before
  * LiveWindow and SmartDashboard integrated updating.
  */
-void Robot::RobotPeriodic() {}
+void Robot::RobotPeriodic() {
+  
+}
+
+
+
+
 
 /**
  * This autonomous (along with the chooser code above) shows how to select
@@ -47,61 +68,121 @@ void Robot::RobotPeriodic() {}
  * if-else structure below with additional strings. If using the SendableChooser
  * make sure to add them to the chooser code above as well.
  */
-void Robot::AutonomousInit() {
-//   m_autoSelected = m_chooser.GetSelected();
-//   // m_autoSelected = SmartDashboard::GetString("Auto Selector",
-//   //     kAutoNameDefault);
-//   fmt::print("Auto selected: {}\n", m_autoSelected);
 
-//   if (m_autoSelected == kAutoNameCustom) {
-//     // Custom Auto goes here
-//   } else {
-//     // Default Auto goes here
-//   }
+void Robot::AutonomousInit() {
+  m_autoSelected = m_chooser.GetSelected();
+  
+  // m_autoSelected = SmartDashboard::GetString("Auto Selector",
+  //     kAutoNameDefault);
+  fmt::print("Auto selected: {}\n", m_autoSelected);
+
+  if (m_autoSelected == kAutoNameCustom) {
+    // Custom Auto goes here
+    // 
+    distance = frc::SmartDashboard::GetNumber("Distance In Inches", 12);
+    leftEncoder.SetPosition(0);
+    rightEncoder.SetPosition(0);
+    gyro.Reset();
+  } else {
+    // Default Auto goes here
+  }
 }
 
 void Robot::AutonomousPeriodic() {
-  // if (m_autoSelected == kAutoNameCustom) {
-  //   // Custom Auto goes here
-  // } else {
-  //   // Default Auto goes here
-  // }
+  if (m_autoSelected == kAutoNameCustom) {
+    // Custom Auto goes here
+    calculateRotateValue(60, 1);
+    frc::SmartDashboard::PutNumber("Gyro Status", gyro.GetAngle());
+    frc::SmartDashboard::PutNumber("Right Encoder Status", rightEncoder.GetPosition());
+    frc::SmartDashboard::PutNumber("Left Encoder Status", leftEncoder.GetPosition());
+  } else {
+    // Default Auto goes here
+    
+  }
 }
 
 void Robot::TeleopInit() {
-  
-  exampleDoublePCM.Set(frc::DoubleSolenoid::Value::kForward);
-  exampleDoublePCM2.Set(frc::DoubleSolenoid::Value::kForward);
-
-
-  //testPIDController.SetSmartMotionMaxVelocity(1000);
+  flywheelShooter2.Follow(flywheelShooter1);
+  motorVelocity = 0;
 }
 
+//1300 is adequate rpm for low scoring.
+
 void Robot::TeleopPeriodic() {
-    if(gamepad.GetRawButtonPressed(1)) {
-      exampleDoublePCM.Toggle();
-      exampleDoublePCM2.Toggle();
-    }
-    else if (gamepad.GetRawButtonPressed(3)) {
-      frc::Wait(time1);
-      exampleDoublePCM.Set(frc::DoubleSolenoid::Value::kOff);
-      exampleDoublePCM2.Set(frc::DoubleSolenoid::Value::kOff);
+  // if(gamepad1.GetRawButtonPressed(2)) {
+  //   LimelightDistance();
+  // }
+  // if(gamepad2.GetRawButton(3)) {
+  //   intake.Set(ControlMode::PercentOutput, 1);
+  // }
+  // else {
+  //   intake.Set(ControlMode::PercentOutput, 0);
+  // }
+ 
+  // if(gamepad1.GetRawButtonPressed(3)) {
+  //   motorVelocity += 100;
+  //   //frc::SmartDashboard::PutNumber("True rpm", motorVelocity);
+  // }
+  //limelight align
+  //ShootemQuickie();
+  
+  //Left motors
+  if(gamepad1.GetRawAxis(3) >= 0.1 && (gamepad1.GetRawAxis(1) >= 0.1 || gamepad1.GetRawAxis(1) <= -0.1)) {
+    leftFront.Set(gamepad1.GetRawAxis(1) * 0.5);
+  }
+  else if(gamepad1.GetRawAxis(1) >= 0.1 || gamepad1.GetRawAxis(1) <= -0.1 && !isActive) {
+    leftFront.Set(gamepad1.GetRawAxis(1));
+  }
+  else {
+    leftFront.Set(0);
+  }   
+  
+  //Right motors
+  if(gamepad1.GetRawAxis(3) >= 0.1 && (gamepad1.GetRawAxis(5) >= 0.1 || gamepad1.GetRawAxis(5) <= -0.1)) {
+    rightFront.Set(-gamepad1.GetRawAxis(5) * 0.5);
+  }
+  else if(gamepad1.GetRawAxis(5) >= 0.1 || gamepad1.GetRawAxis(5) <= -0.1 && !isActive) {
+    rightFront.Set(-gamepad1.GetRawAxis(5));
+  }
+  else {
+    rightFront.Set(0);
+  }
 
-      
-    }
-    
-    //NOTE: Setting target velocity = setting target RPM
-    //testPIDController.SetReference(motorVelocity, rev::ControlType::kVelocity);
+  //intake
+  if(gamepad2.GetRawButton(1)) {
+    intake.Set(ControlMode::PercentOutput, 1);
+  }
+  else  {
+    intake.Set(ControlMode::PercentOutput, 0);
+  }
 
-          
+  //shoot
+  if(gamepad2.GetRawButton(2)) {
+    ShootemQuickie();
+  }
 
-    /* if(gamepad.GetRawButton(1)) {
-      test0.Set(1);
-    
-    }
-    else {
-      test0.Set(0);
-    } */
+  //lower port 
+  if(gamepad2.GetRawButton(3)) {
+    lowerPortShot();
+  }
+ 
+  // if(b && leftStickY >= 0.05) {
+  //   L1Motor.Set(-leftStickY * 0.5);
+  //   L2Motor.Set(-leftStickY * 0.5);
+  // }
+  // else if(y && leftStickY >= 0.05) {
+  //   L1Motor.Set(-leftStickY);
+  //   L2Motor.Set(-leftStickY);
+  // }
+
+  // if(rightStickY >= 0.05) {
+  //   L1Motor.Set(-rightStickY);
+  //   L2Motor.Set(-rightStickY);
+  // }
+  
+  //actual teleop
+    //Drive + slow mode
+
 }
 
 void Robot::DisabledInit() {}
