@@ -93,12 +93,13 @@ double Robot::GetMedian(double value1, double value2, double value3) {
 void Robot::calculateRotateValue(double distance, double speed) {
   gyroAngle = gyro.GetAngle();
   targetDistance = distance * countsPerInch;
-  averageActualDistance = (leftEncoder.GetPosition() + rightEncoder.GetPosition())/2;
+  averageActualDistance = (-leftEncoder.GetPosition() + rightEncoder.GetPosition())/2;
   speedChange = averageActualDistance/targetDistance;
+  halfOfTargetDistance = targetDistance/2; //to be adjusted
 
-  if (leftEncoder.GetPosition() < targetDistance && rightEncoder.GetPosition() < targetDistance){
+  if (-leftEncoder.GetPosition() < targetDistance && rightEncoder.GetPosition() < targetDistance){
     
-      if (leftEncoder.GetPosition() >= (0.5) * targetDistance || rightEncoder.GetPosition() >= (0.5) * targetDistance) {
+      if (-leftEncoder.GetPosition() >= halfOfTargetDistance && rightEncoder.GetPosition() >= halfOfTargetDistance) {
         speed *=  (1 - speedChange);
         leftDrive.SetReference(-speed, rev::ControlType::kVelocity);
         rightFront.Set(speed);
