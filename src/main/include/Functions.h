@@ -93,19 +93,19 @@ double Robot::GetMedian(double value1, double value2, double value3) {
 void Robot::calculateRotateValue(double distance, double speed) {
   gyroAngle = gyro.GetAngle();
   targetDistance = distance * countsPerInch;
-  averageActualDistance = (-leftEncoder.GetPosition() + rightEncoder.GetPosition())/2;
+  averageActualDistance = (-(leftEncoder.GetPosition()) + rightEncoder.GetPosition())/2;
   speedChange = averageActualDistance/targetDistance;
   halfOfTargetDistance = targetDistance/2; //to be adjusted
 
   if (-leftEncoder.GetPosition() < targetDistance && rightEncoder.GetPosition() < targetDistance){
     
-      if (-leftEncoder.GetPosition() >= halfOfTargetDistance && rightEncoder.GetPosition() >= halfOfTargetDistance) {
+      if (-(leftEncoder.GetPosition()) >= halfOfTargetDistance && rightEncoder.GetPosition() >= halfOfTargetDistance) {
         speed *=  (1 - speedChange);
-        leftDrive.SetReference(-speed, rev::ControlType::kVelocity);
         rightFront.Set(speed);
+        leftFront.Set(-speed);
       } else {
-         leftDrive.SetReference(-speed, rev::ControlType::kVelocity);
          rightFront.Set(speed);
+         leftFront.Set(-speed);
       }
 
       if (error > 0 ) {
@@ -186,6 +186,54 @@ void Robot::limelightAlign() {
   }
   
 
+}
+
+void Robot::autoLimelightAlign() {
+  //remakes the limelight data table
+  auto inst = nt::NetworkTableInstance::GetDefault();
+  auto limelight = inst.GetTable("limelight");
+  
+  //needs to be configured 
+  float constant = 0.01; 
+  float min_command = 0.05f;
+  double leftChange, rightChange;
+
+  //current speed of the motors
+  double leftSpeed = leftFront.GetAppliedOutput();
+  double rightSpeed = rightFront.GetAppliedOutput();
+
+  targetOffsetAngle_Horizontal = limelight->GetNumber("tx",0.0);
+  frc::SmartDashboard::PutNumber("horizontal offset", targetOffsetAngle_Horizontal);
+  
+    if(targetOffsetAngle_Horizontal > 3) {
+      leftChange = constant * abs(targetOffsetAngle_Horizontal) + 0.1;
+      rightChange = -(constant * abs(targetOffsetAngle_Horizontal) + 0.1);
+
+      leftSpeed = leftChange;      
+      rightSpeed = rightChange;
+
+      frc::SmartDashboard::PutNumber("left motor speed", leftSpeed);
+      frc::SmartDashboard::PutNumber("left motor speed", rightSpeed);
+
+      leftFront.Set(-leftSpeed);
+      rightFront.Set(rightSpeed);
+    }
+    else if(targetOffsetAngle_Horizontal < -3) {
+      leftChange = (constant * abs(targetOffsetAngle_Horizontal) + 0.1);
+      rightChange = constant * abs(targetOffsetAngle_Horizontal) + 0.1;
+
+      leftSpeed = leftChange;
+      rightSpeed = rightChange;
+
+      frc::SmartDashboard::PutNumber("left motor speed", leftSpeed);
+      frc::SmartDashboard::PutNumber("left motor speed", rightSpeed);
+      
+      leftFront.Set(leftSpeed);
+      rightFront.Set(rightSpeed);
+    } else {
+    leftFront.Set(0);
+    rightFront.Set(0);
+  }
 }
 
 void Robot::encoderDrive(double speed, double leftInches, double rightInches, double timeoutSeconds) {

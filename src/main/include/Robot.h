@@ -53,6 +53,7 @@ class Robot : public frc::TimedRobot {
   double GetMedian(double value1, double value2, double value3);
   void DistanceToRPM(double distance);
   void limelightAlign();
+  void autoLimelightAlign();
   void ShootemQuickie();
   void ScoringCargo();
   void lowerPortShot();

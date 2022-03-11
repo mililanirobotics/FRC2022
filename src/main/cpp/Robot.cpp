@@ -91,7 +91,13 @@ void Robot::AutonomousInit() {
 void Robot::AutonomousPeriodic() {
   if (m_autoSelected == kAutoNameCustom) {
     // Custom Auto goes here
-    calculateRotateValue(60, 1);
+    calculateRotateValue(-60, 0.5);
+    autoLimelightAlign();
+    //ShootemQuickie();
+
+
+
+
     frc::SmartDashboard::PutNumber("Gyro Status", gyro.GetAngle());
     frc::SmartDashboard::PutNumber("Right Encoder Status", rightEncoder.GetPosition());
     frc::SmartDashboard::PutNumber("Left Encoder Status", leftEncoder.GetPosition());
