@@ -113,7 +113,7 @@ class Robot : public frc::TimedRobot {
   const double wheelDiameterInches = 4; //TBD
   const double wheelCircumference = M_PI * wheelDiameterInches;
   const double countsPerRev = 42;
-  const double gearReduction = 7; //TBD
+  const double gearReduction = 8.6; //TBD
   const double countsPerInch = (countsPerRev * gearReduction)/wheelCircumference;
   const double degrees = 0;
   const double robotRadius = 25; //TBD
@@ -129,9 +129,9 @@ class Robot : public frc::TimedRobot {
 
   double gyroAngle; 
   double error = gyroAngle;
-  double speedFactor = error * 0.2; //arbitrary number (to be tested)
+  double speedFactor = error * 0.65; //arbitrary number (to be tested)
   double targetDistance; 
-  double halfOfTargetDistance;
+  double fractionOfTargetDistance;
 
   bool functionCompleted;
 

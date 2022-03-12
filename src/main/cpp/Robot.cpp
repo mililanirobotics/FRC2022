@@ -83,6 +83,9 @@ void Robot::AutonomousInit() {
     leftEncoder.SetPosition(0);
     rightEncoder.SetPosition(0);
     gyro.Reset();
+
+  functionCompleted = 0;
+
   } else {
     // Default Auto goes here
   }
@@ -91,11 +94,13 @@ void Robot::AutonomousInit() {
 void Robot::AutonomousPeriodic() {
   if (m_autoSelected == kAutoNameCustom) {
     // Custom Auto goes here
-    calculateRotateValue(-60, 0.5);
+    calculateRotateValue(100, 0.25);  
     
-    if (Robot::functionCompleted == 0){
+    //frc::Wait(units::second_t(3));
+
+    /*if (Robot::functionCompleted == 0){
     shoot();
-    }
+    }*/
 
     //ShootemQuickie();
 

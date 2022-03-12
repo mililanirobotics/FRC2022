@@ -95,33 +95,32 @@ void Robot::calculateRotateValue(double distance, double speed) {
   targetDistance = distance * countsPerInch;
   averageActualDistance = (-(leftEncoder.GetPosition()) + rightEncoder.GetPosition())/2;
   speedChange = averageActualDistance/targetDistance;
-  halfOfTargetDistance = targetDistance/2; //to be adjusted
+  fractionOfTargetDistance = targetDistance * (2/3); //to be adjusted
 
-  if (-leftEncoder.GetPosition() < targetDistance && rightEncoder.GetPosition() < targetDistance){
+  if (-(leftEncoder.GetPosition()) < targetDistance && rightEncoder.GetPosition() < targetDistance){
     
-      if (-(leftEncoder.GetPosition()) >= halfOfTargetDistance && rightEncoder.GetPosition() >= halfOfTargetDistance) {
-        speed *=  (1 - speedChange);
+      if (-(leftEncoder.GetPosition()) >= fractionOfTargetDistance && rightEncoder.GetPosition() >= fractionOfTargetDistance) {
+        //speed *=  (1 - speedChange);
         rightFront.Set(speed);
-        leftFront.Set(-speed);
+        leftFront.Set(-speed); 
+
+        if(error > 0){
+          leftFront.Set(-(speed + speedFactor));
+
+        } else if (error < 0) {
+          rightFront.Set(speed + speedFactor);
+        }
+      /*
+      } else if (-(leftEncoder.GetPosition()) >= targetDistance && (rightEncoder.GetPosition()) >= targetDistance){
+        rightFront.Set(0);
+        leftFront.Set(0);*/
+
+        
       } else {
          rightFront.Set(speed);
          leftFront.Set(-speed);
-      }
-
-      if (error > 0 ) {
-        leftFront.Set(-(speed + speedFactor));
-
-      } else {
-        leftFront.Set(-speed);
-      }
-
-      if (error < 0) {
-        rightFront.Set(speed + speedFactor);
-      } else {
-        
-        rightFront.Set(speed);
-      }
-    } 
+      } 
+    }
     else {
        leftFront.Set(0);
        rightFront.Set(0);
