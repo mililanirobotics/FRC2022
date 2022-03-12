@@ -133,6 +133,8 @@ class Robot : public frc::TimedRobot {
   double targetDistance; 
   double halfOfTargetDistance;
 
+  bool functionCompleted;
+
   double averageActualDistance;
   double speedChange; 
   //Gamepad assignments:

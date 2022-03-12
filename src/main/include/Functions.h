@@ -258,6 +258,8 @@ void Robot::shoot(){
   vConveyorRight.Set(ControlMode::PercentOutput, 0);
   hConveyor.Set(ControlMode::PercentOutput, 0);
 
+  Robot::functionCompleted = 1;
+
 }
 
 void Robot::encoderDrive(double speed, double leftInches, double rightInches, double timeoutSeconds) {
