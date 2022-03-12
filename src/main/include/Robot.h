@@ -54,6 +54,7 @@ class Robot : public frc::TimedRobot {
   void DistanceToRPM(double distance);
   void limelightAlign();
   void autoLimelightAlign();
+  void shoot();
   void ShootemQuickie();
   void ScoringCargo();
   void lowerPortShot();

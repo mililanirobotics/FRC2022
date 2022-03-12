@@ -236,6 +236,30 @@ void Robot::autoLimelightAlign() {
   }
 }
 
+void Robot::shoot(){
+  DistanceToRPM(LimelightDistance());
+  autoLimelightAlign();
+
+  double trueVelocity = motorVelocity * 2.123;
+
+  flywheelPID.SetReference(-trueVelocity, rev::ControlType::kVelocity);
+
+  frc::Wait(units::second_t(3));
+
+  intake.Set(ControlMode::PercentOutput, 1);
+  vConveyorLeft.Set(ControlMode::PercentOutput, 1);
+  vConveyorRight.Set(ControlMode::PercentOutput, 1);
+  hConveyor.Set(ControlMode::PercentOutput, 1);
+
+  frc::Wait(units::second_t(5));
+
+  intake.Set(ControlMode::PercentOutput, 0);
+  vConveyorLeft.Set(ControlMode::PercentOutput, 0);
+  vConveyorRight.Set(ControlMode::PercentOutput, 0);
+  hConveyor.Set(ControlMode::PercentOutput, 0);
+
+}
+
 void Robot::encoderDrive(double speed, double leftInches, double rightInches, double timeoutSeconds) {
   int newLeftTarget;
   int newRightTarget;

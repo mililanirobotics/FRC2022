@@ -92,7 +92,7 @@ void Robot::AutonomousPeriodic() {
   if (m_autoSelected == kAutoNameCustom) {
     // Custom Auto goes here
     calculateRotateValue(-60, 0.5);
-    autoLimelightAlign();
+    shoot();
     //ShootemQuickie();
 
 
