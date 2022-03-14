@@ -45,7 +45,7 @@ double Robot::LimelightDistance() {
     frc::SmartDashboard::PutNumber("area:", targetArea);
     frc::SmartDashboard::PutNumber("skew:", targetSkew);
     
-    trueAngle = (40 + targetOffsetAngle_Vertical) * M_PI / 180;
+    trueAngle = (39 + targetOffsetAngle_Vertical) * M_PI / 180;
 
     //should be 38 off the ground, but height is different for testing purposes
     distanceToHub = (104-34)/(tan(trueAngle)) + (24 + 13);
@@ -93,17 +93,17 @@ double Robot::GetMedian(double value1, double value2, double value3) {
 void Robot::calculateRotateValue(double distance, double speed) {
   gyroAngle = gyro.GetAngle();
   targetDistance = distance * countsPerInch;
-  averageActualDistance = (leftEncoder.GetPosition() + rightEncoder.GetPosition())/2;
+  averageActualDistance = -((leftEncoder.GetPosition()) + rightEncoder.GetPosition())/2;
   speedChange = averageActualDistance/targetDistance;
 
   if (leftEncoder.GetPosition() < targetDistance && rightEncoder.GetPosition() < targetDistance){
     
-      if (leftEncoder.GetPosition() >= (0.5) * targetDistance || rightEncoder.GetPosition() >= (0.5) * targetDistance) {
+      if (-(leftEncoder.GetPosition()) >= (0.5) * targetDistance || rightEncoder.GetPosition() >= (0.5) * targetDistance) {
         speed *=  (1 - speedChange);
-        leftDrive.SetReference(-speed, rev::ControlType::kVelocity);
+        leftFront.Set(-speed);
         rightFront.Set(speed);
       } else {
-         leftDrive.SetReference(-speed, rev::ControlType::kVelocity);
+         leftFront.Set(-speed);
          rightFront.Set(speed);
       }
 
@@ -145,7 +145,7 @@ void Robot::limelightAlign() {
   frc::SmartDashboard::PutNumber("horizontal offset", targetOffsetAngle_Horizontal);
 
   //59.6 horizontal degrees FOV
-  if(gamepad1.GetRawButton(3)) {
+  
     //3 & -3 are in degrees
     if(targetOffsetAngle_Horizontal > 3) {
       leftChange = constant * abs(targetOffsetAngle_Horizontal) + 0.1;
@@ -173,19 +173,13 @@ void Robot::limelightAlign() {
       leftFront.Set(leftSpeed);
       rightFront.Set(rightSpeed);
     }
-    
-  }
-  else {
-    leftFront.Set(0);
-    rightFront.Set(0);
-  }
-
-  if(gamepad1.GetRawButton(3)) {
-    frc::SmartDashboard::PutNumber("left motor speed", leftSpeed);
-  }
-  
-
+    else {
+        leftFront.Set(0);
+        rightFront.Set(0);
+    }
+ 
 }
+
 
 void Robot::encoderDrive(double speed, double leftInches, double rightInches, double timeoutSeconds) {
   int newLeftTarget;
@@ -280,16 +274,17 @@ void Robot::ShootemQuickie() {
     
     //NOTE: Setting target velocity = setting target RPM
     isActive = true;
+
     hConveyor.Set(ControlMode::PercentOutput, 1);
-    //DistanceToRPM(LimelightDistance());
-    trueVelocity = motorVelocity * 2.123;
-    flywheelPID.SetReference(-trueVelocity, rev::ControlType::kVelocity);
-    frc::Wait(units::second_t(1));
+    DistanceToRPM(LimelightDistance());
+    
+    flywheelPID.SetReference(-motorVelocity, rev::ControlType::kVelocity);
+    frc::Wait(units::second_t(1.5));
 
     vConveyorLeft.Set(ControlMode::PercentOutput, 1);
     vConveyorRight.Set(ControlMode::PercentOutput,-1);
     
-    frc::Wait(units::second_t(4));
+    frc::Wait(units::second_t(3.5));
     
     intake.Set(ControlMode::PercentOutput, 0);
     hConveyor.Set(ControlMode::PercentOutput, 0);
@@ -312,6 +307,10 @@ void Robot::ShootemQuickie() {
   frc::SmartDashboard::PutNumber("True rpm", trueVelocity);
 
 }
+
+// void Robot::flywheelWindup() {
+//     if()
+// }
 
 void Robot::lowerPortShot() {    
     //NOTE: Setting target velocity = setting target RPM
@@ -344,7 +343,7 @@ void Robot::lowerPortShot() {
 // calculated polynomial function 4.7x^2 - 35.5x + 1891
 void Robot::DistanceToRPM (double distance) {
   distance = distance/12;
-  motorVelocity = (int)(9.59*(distance*distance) - (125*distance) + 2305);
+  motorVelocity = (int)(5.76*(distance*distance) + (5.39*distance) + 3670);
 }
 
 int Robot::getPosition() {
@@ -366,5 +365,59 @@ int Robot::getPosition() {
 
     } else {
         return  0;
+    }
+}
+
+void Robot::intakeEm() {
+    if(gamepad2.GetRawButton(6)) {
+        intake.Set(ControlMode::PercentOutput, 1);
+        hConveyor.Set(ControlMode::PercentOutput, 1);
+    }
+    else if (gamepad2.GetRawButton(5)) {
+        intake.Set(ControlMode::PercentOutput, -1);
+        hConveyor.Set(ControlMode::PercentOutput, -1);
+    }
+    else  {
+        intake.Set(ControlMode::PercentOutput, 0);
+        hConveyor.Set(ControlMode::PercentOutput, 0);
+    }
+}
+
+void Robot::tankDrive() {
+    if(gamepad1.GetRawAxis(3) >= 0.1 && (gamepad1.GetRawAxis(1) >= 0.1 || gamepad1.GetRawAxis(1) <= -0.1)) {
+        leftFront.Set(gamepad1.GetRawAxis(1) * 0.5);
+    }
+    else if(gamepad1.GetRawAxis(1) >= 0.1 || gamepad1.GetRawAxis(1) <= -0.1 && !isActive) {
+        leftFront.Set(gamepad1.GetRawAxis(1));
+    }
+    else {
+        leftFront.Set(0);
+    }   
+  
+    //Right motors
+    if(gamepad1.GetRawAxis(3) >= 0.1 && (gamepad1.GetRawAxis(5) >= 0.1 || gamepad1.GetRawAxis(5) <= -0.1)) {
+        rightFront.Set(-gamepad1.GetRawAxis(5) * 0.5);
+    }
+    else if(gamepad1.GetRawAxis(5) >= 0.1 || gamepad1.GetRawAxis(5) <= -0.1 && !isActive) {
+        rightFront.Set(-gamepad1.GetRawAxis(5));
+    }
+    else {
+        rightFront.Set(0);
+    }
+}
+
+void Robot::spitEmOut() {
+    
+    if (gamepad2.GetRawButton(1)) {
+        intake.Set(ControlMode::PercentOutput, -1);
+        hConveyor.Set(ControlMode::PercentOutput, -1);
+        vConveyorLeft.Set(ControlMode::PercentOutput, -1);
+        vConveyorRight.Set(ControlMode::PercentOutput, -1);
+    }
+    else {
+        intake.Set(ControlMode::PercentOutput, 0);
+        hConveyor.Set(ControlMode::PercentOutput, 0);
+        vConveyorLeft.Set(ControlMode::PercentOutput, 0);
+        vConveyorRight.Set(ControlMode::PercentOutput, 0);
     }
 }

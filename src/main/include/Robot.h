@@ -64,6 +64,9 @@ class Robot : public frc::TimedRobot {
   void turnDrive(double speed, double degrees, double timeoutSeconds);
 
   void calculateRotateValue(double distance, double speed);
+  void spitEmOut();
+  void tankDrive();
+  void intakeEm();
 
   int getPosition();
 
@@ -111,7 +114,7 @@ class Robot : public frc::TimedRobot {
   const double wheelDiameterInches = 4; //TBD
   const double wheelCircumference = M_PI * wheelDiameterInches;
   const double countsPerRev = 42;
-  const double gearReduction = 7; //TBD
+  const double gearReduction = 6.89; //TBD
   const double countsPerInch = (countsPerRev * gearReduction)/wheelCircumference;
   const double degrees = 0;
   const double robotRadius = 12; //TBD

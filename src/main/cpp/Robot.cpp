@@ -37,6 +37,8 @@ void Robot::RobotInit() {
   leftEncoder.SetPositionConversionFactor(42);
   rightEncoder.SetPositionConversionFactor(42);
 
+  
+
   gyro.Calibrate();
 }
 
@@ -91,7 +93,7 @@ void Robot::AutonomousInit() {
 void Robot::AutonomousPeriodic() {
   if (m_autoSelected == kAutoNameCustom) {
     // Custom Auto goes here
-    calculateRotateValue(60, 1);
+    calculateRotateValue(72, 0.2); //add extra 12 inches from wanted distance 
     frc::SmartDashboard::PutNumber("Gyro Status", gyro.GetAngle());
     frc::SmartDashboard::PutNumber("Right Encoder Status", rightEncoder.GetPosition());
     frc::SmartDashboard::PutNumber("Left Encoder Status", leftEncoder.GetPosition());
@@ -99,6 +101,8 @@ void Robot::AutonomousPeriodic() {
     // Default Auto goes here
     
   }
+
+
 }
 
 void Robot::TeleopInit() {
@@ -119,55 +123,60 @@ void Robot::TeleopPeriodic() {
   //   intake.Set(ControlMode::PercentOutput, 0);
   // }
  
-  // if(gamepad1.GetRawButtonPressed(3)) {
+  // if(gamepad2.GetRawButtonPressed(3)) {
+  //   motorVelocity += 1000;
+  //   frc::SmartDashboard::PutNumber("set rpm", motorVelocity);
+  // }
+  // if(gamepad2.GetRawButtonPressed(10)){
   //   motorVelocity += 100;
-  //   //frc::SmartDashboard::PutNumber("True rpm", motorVelocity);
+  //   frc::SmartDashboard::PutNumber("set rpm", motorVelocity);
   // }
   //limelight align
   //ShootemQuickie();
   
   //Left motors
-  if(gamepad1.GetRawAxis(3) >= 0.1 && (gamepad1.GetRawAxis(1) >= 0.1 || gamepad1.GetRawAxis(1) <= -0.1)) {
-    leftFront.Set(gamepad1.GetRawAxis(1) * 0.5);
-  }
-  else if(gamepad1.GetRawAxis(1) >= 0.1 || gamepad1.GetRawAxis(1) <= -0.1 && !isActive) {
-    leftFront.Set(gamepad1.GetRawAxis(1));
-  }
-  else {
-    leftFront.Set(0);
-  }   
-  
-  //Right motors
-  if(gamepad1.GetRawAxis(3) >= 0.1 && (gamepad1.GetRawAxis(5) >= 0.1 || gamepad1.GetRawAxis(5) <= -0.1)) {
-    rightFront.Set(-gamepad1.GetRawAxis(5) * 0.5);
-  }
-  else if(gamepad1.GetRawAxis(5) >= 0.1 || gamepad1.GetRawAxis(5) <= -0.1 && !isActive) {
-    rightFront.Set(-gamepad1.GetRawAxis(5));
-  }
-  else {
-    rightFront.Set(0);
-  }
+  frc::SmartDashboard::PutNumber("Distance: ", LimelightDistance());
 
+  tankDrive();
+ 
   //intake
-  if(gamepad2.GetRawButton(1)) {
-    intake.Set(ControlMode::PercentOutput, 1);
-  }
-  else  {
-    intake.Set(ControlMode::PercentOutput, 0);
+  intakeEm();
+
+  //align
+  if(gamepad2.GetRawButton(4)) {
+    limelightAlign();
   }
 
   //shoot
   if(gamepad2.GetRawButton(2)) {
-    ShootemQuickie();
+    //ShootemQuickie();
+    vConveyorRight.Set(ControlMode::PercentOutput, -1);
+    vConveyorLeft.Set(ControlMode::PercentOutput, 1);
+  }
+  else {
+    vConveyorRight.Set(ControlMode::PercentOutput, 0);
+    vConveyorLeft.Set(ControlMode::PercentOutput, 0);
+  }
+ 
+  
+  if(gamepad2.GetRawButtonPressed(1)) {
+    DistanceToRPM(LimelightDistance());
+    frc::SmartDashboard::PutNumber("motorVelocity: ", motorVelocity);
+    flywheelPID.SetReference(-motorVelocity, rev::ControlType::kVelocity);
+  }
+  
+  if(gamepad2.GetRawButtonPressed(9)) {
+    flywheelPID.SetReference(0, rev::ControlType::kVelocity);
   }
 
   //lower port 
-  if(gamepad2.GetRawButton(3)) {
-    lowerPortShot();
-  }
+  // if(gamepad2.GetRawButton(3)) {
+  //   lowerPortShot();
+  // }
  
   // if(b && leftStickY >= 0.05) {
   //   L1Motor.Set(-leftStickY * 0.5);
+
   //   L2Motor.Set(-leftStickY * 0.5);
   // }
   // else if(y && leftStickY >= 0.05) {
