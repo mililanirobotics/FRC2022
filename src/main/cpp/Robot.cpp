@@ -12,7 +12,8 @@
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <ctime> 
 #include <time.h>
-
+#include <frc/Timer.h>
+#include <thread>
 //limelight stuff
 #include "frc/smartdashboard/Smartdashboard.h"
 #include "networktables/NetworkTable.h"
@@ -38,6 +39,9 @@ void Robot::RobotInit() {
   rightEncoder.SetPositionConversionFactor(42);
 
   gyro.Calibrate();
+
+  
+  
 }
 
 
@@ -84,7 +88,11 @@ void Robot::AutonomousInit() {
     rightEncoder.SetPosition(0);
     gyro.Reset();
 
-  functionCompleted = 0;
+    functionCompleted = 0;
+    encoderDriveRunning = false;
+    hasRun = false;
+
+    pTimer->Reset();
 
   } else {
     // Default Auto goes here
@@ -94,13 +102,17 @@ void Robot::AutonomousInit() {
 void Robot::AutonomousPeriodic() {
   if (m_autoSelected == kAutoNameCustom) {
     // Custom Auto goes here
-    calculateRotateValue(100, 0.25);  
+    //autoLimelightAlign();
+    //calculateRotateValue(-120, 0.25);
+    
+    if ((functionCompleted == 0) && (encoderDriveRunning == false)){
+       shoot();
+    }
+      
     
     //frc::Wait(units::second_t(3));
 
-    /*if (Robot::functionCompleted == 0){
-    shoot();
-    }*/
+    
 
     //ShootemQuickie();
 

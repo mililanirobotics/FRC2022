@@ -30,6 +30,7 @@
 //gyro
 #include <frc/ADXRS450_Gyro.h>
 
+frc::Timer *pTimer;
 
 double Robot::LimelightDistance() {
     auto inst = nt::NetworkTableInstance::GetDefault();
@@ -45,7 +46,7 @@ double Robot::LimelightDistance() {
     frc::SmartDashboard::PutNumber("area:", targetArea);
     frc::SmartDashboard::PutNumber("skew:", targetSkew);
     
-    trueAngle = (40 + targetOffsetAngle_Vertical) * M_PI / 180;
+    trueAngle = (39 + targetOffsetAngle_Vertical) * M_PI / 180;
 
     //should be 38 off the ground, but height is different for testing purposes
     distanceToHub = (104-34)/(tan(trueAngle)) + (24 + 13);
@@ -96,36 +97,55 @@ void Robot::calculateRotateValue(double distance, double speed) {
   averageActualDistance = (-(leftEncoder.GetPosition()) + rightEncoder.GetPosition())/2;
   speedChange = averageActualDistance/targetDistance;
   fractionOfTargetDistance = targetDistance * (2/3); //to be adjusted
+  
+  speedFactor = error * 0.1; //arbitrary number (to be tested)
 
   if (-(leftEncoder.GetPosition()) < targetDistance && rightEncoder.GetPosition() < targetDistance){
     
       if (-(leftEncoder.GetPosition()) >= fractionOfTargetDistance && rightEncoder.GetPosition() >= fractionOfTargetDistance) {
         //speed *=  (1 - speedChange);
-        rightFront.Set(speed);
-        leftFront.Set(-speed); 
-
-        if(error > 0){
-          leftFront.Set(-(speed + speedFactor));
-
-        } else if (error < 0) {
-          rightFront.Set(speed + speedFactor);
+        if(error > 1){
+          rightFront.Set(speed + (speed * speedFactor));
+          leftFront.Set(-speed);
+        
+        } else if (error < -1) {
+          leftFront.Set(-(speed + (speed * speedFactor)));
+          rightFront.Set(speed); 
+          
+        } else {
+          rightFront.Set(speed);
+          leftFront.Set(-speed); 
+          
         }
+      }
       /*
       } else if (-(leftEncoder.GetPosition()) >= targetDistance && (rightEncoder.GetPosition()) >= targetDistance){
         rightFront.Set(0);
         leftFront.Set(0);*/
+    
+  } else if (-(leftEncoder.GetPosition()) > targetDistance && rightEncoder.GetPosition() > targetDistance) {
+      if (error > 1) {
+          rightFront.Set(-(speed + (speed * speedFactor)));
+          leftFront.Set(speed);
 
-        
-      } else {
-         rightFront.Set(speed);
-         leftFront.Set(-speed);
-      } 
-    }
-    else {
-       leftFront.Set(0);
-       rightFront.Set(0);
-    }
+          
+
+        } else if (error < -1) {
+          leftFront.Set((speed + (speed * speedFactor)));
+          rightFront.Set(-speed); 
+          
+        }
+        else {
+          rightFront.Set(-speed);
+          leftFront.Set(speed); 
+        }
+  } else {
+      leftFront.Set(0);
+      rightFront.Set(0);
+
+      encoderDriveRunning = false;
   }
+}  
 
 void Robot::limelightAlign() {
   //remakes the limelight data table
@@ -189,76 +209,82 @@ void Robot::limelightAlign() {
 
 void Robot::autoLimelightAlign() {
   //remakes the limelight data table
-  auto inst = nt::NetworkTableInstance::GetDefault();
-  auto limelight = inst.GetTable("limelight");
-  
-  //needs to be configured 
-  float constant = 0.01; 
-  float min_command = 0.05f;
-  double leftChange, rightChange;
+  if (!hasRun) {
+    auto inst = nt::NetworkTableInstance::GetDefault();
+    auto limelight = inst.GetTable("limelight");
+    
+    //needs to be configured 
+    float constant = 0.01; 
+    float min_command = 0.05f;
+    double leftChange, rightChange;
 
-  //current speed of the motors
-  double leftSpeed = leftFront.GetAppliedOutput();
-  double rightSpeed = rightFront.GetAppliedOutput();
+    //current speed of the motors
+    double leftSpeed = leftFront.GetAppliedOutput();
+    double rightSpeed = rightFront.GetAppliedOutput();
 
-  targetOffsetAngle_Horizontal = limelight->GetNumber("tx",0.0);
-  frc::SmartDashboard::PutNumber("horizontal offset", targetOffsetAngle_Horizontal);
-  
-    if(targetOffsetAngle_Horizontal > 3) {
-      leftChange = constant * abs(targetOffsetAngle_Horizontal) + 0.1;
-      rightChange = -(constant * abs(targetOffsetAngle_Horizontal) + 0.1);
+    targetOffsetAngle_Horizontal = limelight->GetNumber("tx",0.0);
+    frc::SmartDashboard::PutNumber("horizontal offset", targetOffsetAngle_Horizontal);
+    
+      if((targetOffsetAngle_Horizontal > 5.2)) {
+        leftChange = constant * abs(targetOffsetAngle_Horizontal) + 0.1;
+        rightChange = -(constant * abs(targetOffsetAngle_Horizontal) + 0.1);
 
-      leftSpeed = leftChange;      
-      rightSpeed = rightChange;
+        leftSpeed = leftChange;      
+        rightSpeed = rightChange;
 
-      frc::SmartDashboard::PutNumber("left motor speed", leftSpeed);
-      frc::SmartDashboard::PutNumber("left motor speed", rightSpeed);
+        frc::SmartDashboard::PutNumber("left motor speed", leftSpeed);
+        frc::SmartDashboard::PutNumber("left motor speed", rightSpeed);
 
-      leftFront.Set(-leftSpeed);
-      rightFront.Set(rightSpeed);
-    }
-    else if(targetOffsetAngle_Horizontal < -3) {
-      leftChange = (constant * abs(targetOffsetAngle_Horizontal) + 0.1);
-      rightChange = constant * abs(targetOffsetAngle_Horizontal) + 0.1;
+        leftFront.Set(-leftSpeed);
+        rightFront.Set(rightSpeed);
+      }
+      else if((targetOffsetAngle_Horizontal < -5.2)) {
+        leftChange = (constant * abs(targetOffsetAngle_Horizontal) + 0.1);
+        rightChange = constant * abs(targetOffsetAngle_Horizontal) + 0.1;
 
-      leftSpeed = leftChange;
-      rightSpeed = rightChange;
+        leftSpeed = leftChange;
+        rightSpeed = rightChange;
 
-      frc::SmartDashboard::PutNumber("left motor speed", leftSpeed);
-      frc::SmartDashboard::PutNumber("left motor speed", rightSpeed);
-      
-      leftFront.Set(leftSpeed);
-      rightFront.Set(rightSpeed);
-    } else {
-    leftFront.Set(0);
-    rightFront.Set(0);
+        frc::SmartDashboard::PutNumber("left motor speed", leftSpeed);
+        frc::SmartDashboard::PutNumber("left motor speed", rightSpeed);
+        
+        leftFront.Set(leftSpeed);
+        rightFront.Set(rightSpeed);
+      } else {
+        leftFront.Set(0);
+        rightFront.Set(0);
+      }
+
+      bool hasRun = true;
   }
 }
 
 void Robot::shoot(){
+  
+  //autoLimelightAlign();
+  pTimer = new frc::Timer();
+  
   DistanceToRPM(LimelightDistance());
-  autoLimelightAlign();
+  flywheelPID.SetReference(-motorVelocity, rev::ControlType::kVelocity);
+  frc::SmartDashboard::PutNumber("MotorVelocity", motorVelocity);
+  pTimer->Start();
+  auto time = pTimer->Get();
+  if (time >= units::second_t(3)) {
+    intake.Set(ControlMode::PercentOutput, 1);
+    vConveyorLeft.Set(ControlMode::PercentOutput, 1);
+    vConveyorRight.Set(ControlMode::PercentOutput, -1);
+    hConveyor.Set(ControlMode::PercentOutput, 1);
+  }
+  else if (time >= units::second_t(5)) {
+    intake.Set(ControlMode::PercentOutput, 0);
+    vConveyorLeft.Set(ControlMode::PercentOutput, 0);
+    vConveyorRight.Set(ControlMode::PercentOutput, 0);
+    hConveyor.Set(ControlMode::PercentOutput, 0);
 
-  double trueVelocity = motorVelocity * 2.123;
+    flywheelPID.SetReference(0, rev::ControlType::kVelocity);
 
-  flywheelPID.SetReference(-trueVelocity, rev::ControlType::kVelocity);
-
-  frc::Wait(units::second_t(3));
-
-  intake.Set(ControlMode::PercentOutput, 1);
-  vConveyorLeft.Set(ControlMode::PercentOutput, 1);
-  vConveyorRight.Set(ControlMode::PercentOutput, 1);
-  hConveyor.Set(ControlMode::PercentOutput, 1);
-
-  frc::Wait(units::second_t(5));
-
-  intake.Set(ControlMode::PercentOutput, 0);
-  vConveyorLeft.Set(ControlMode::PercentOutput, 0);
-  vConveyorRight.Set(ControlMode::PercentOutput, 0);
-  hConveyor.Set(ControlMode::PercentOutput, 0);
-
-  Robot::functionCompleted = 1;
-
+    functionCompleted = 1;
+  }
 }
 
 void Robot::encoderDrive(double speed, double leftInches, double rightInches, double timeoutSeconds) {
@@ -418,7 +444,7 @@ void Robot::lowerPortShot() {
 // calculated polynomial function 4.7x^2 - 35.5x + 1891
 void Robot::DistanceToRPM (double distance) {
   distance = distance/12;
-  motorVelocity = (int)(9.59*(distance*distance) - (125*distance) + 2305);
+  motorVelocity = (int)(5.76*(distance*distance) + (5.39*distance) + 3670);
 }
 
 int Robot::getPosition() {

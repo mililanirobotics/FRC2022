@@ -72,6 +72,12 @@
     "thread": "cpp",
     "cinttypes": "cpp",
     "typeinfo": "cpp",
-    "*.inc": "cpp"
+    "*.inc": "cpp",
+    "hash_map": "cpp",
+    "hash_set": "cpp",
+    "codecvt": "cpp",
+    "filesystem": "cpp",
+    "random": "cpp",
+    "future": "cpp"
   }
 }

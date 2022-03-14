@@ -70,7 +70,6 @@ class Robot : public frc::TimedRobot {
   int getPosition();
 
  //CIMs  
-  TalonSRX C1Motor{10};
   TalonSRX C2Motor{11};
 
   TalonSRX hConveyor{18};
@@ -119,16 +118,18 @@ class Robot : public frc::TimedRobot {
   const double robotRadius = 25; //TBD
   const double degreesToInches = (degrees * (M_PI / 180) * robotRadius);
 
+  bool hasRun = false;
   double distance;
   //Switch declarations
   
   
   //score cargo method
   
-
+  //timer
+  
 
   double gyroAngle; 
-  double error = gyroAngle;
+  double& error = gyroAngle;
   double speedFactor = error * 0.65; //arbitrary number (to be tested)
   double targetDistance; 
   double fractionOfTargetDistance;
@@ -169,6 +170,8 @@ class Robot : public frc::TimedRobot {
   double kP = 0.000001, kFF = 0.00015283, kMaxoutput = 1, kminoutput = -1, kI = 1e-4, kD = 1;
   double motorVelocity = 0;
   double trueVelocity;
+
+  bool encoderDriveRunning = true;
 
   bool isActive;
 
