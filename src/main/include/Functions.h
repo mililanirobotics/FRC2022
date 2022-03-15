@@ -477,20 +477,3 @@ void Robot::joshController() {
   }
 
 }
-
-
-//Josh preference
-void Robot::intakeEm() {
-    if(gamepad2.GetRawButton(6)) {
-        intake.Set(ControlMode::PercentOutput, 1);
-        hConveyor.Set(ControlMode::PercentOutput, 1);
-    }
-    else if (gamepad2.GetRawButton(5)) {
-        intake.Set(ControlMode::PercentOutput, -1);
-        hConveyor.Set(ControlMode::PercentOutput, -1);
-    }
-    else  {
-        intake.Set(ControlMode::PercentOutput, 0);
-        hConveyor.Set(ControlMode::PercentOutput, 0);
-    }
-}

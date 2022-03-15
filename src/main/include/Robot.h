@@ -64,9 +64,7 @@ class Robot : public frc::TimedRobot {
   void turnDrive(double speed, double degrees, double timeoutSeconds);
 
   void calculateRotateValue(double distance, double speed);
-  void spitEmOut();
   void tankDrive();
-  void intakeEm();
   void kentController();
   void joshController();
   void troyAndMichaelController();

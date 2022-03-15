@@ -134,40 +134,17 @@ void Robot::TeleopPeriodic() {
   //limelight align
   //ShootemQuickie();
   
-  //Left motors
-  frc::SmartDashboard::PutNumber("Distance: ", LimelightDistance());
 
-  tankDrive();
  
-  //intake
-  intakeEm();
-
-  //align
-  if(gamepad2.GetRawButton(4)) {
-    limelightAlign();
-  }
-
-  //shoot
-  if(gamepad2.GetRawButton(2)) {
-    //ShootemQuickie();
-    vConveyorRight.Set(ControlMode::PercentOutput, -1);
-    vConveyorLeft.Set(ControlMode::PercentOutput, 1);
-  }
-  else {
-    vConveyorRight.Set(ControlMode::PercentOutput, 0);
-    vConveyorLeft.Set(ControlMode::PercentOutput, 0);
-  }
- 
+  // if(gamepad2.GetRawButtonPressed(1)) {
+  //   DistanceToRPM(LimelightDistance());
+  //   frc::SmartDashboard::PutNumber("motorVelocity: ", motorVelocity);
+  //   flywheelPID.SetReference(-motorVelocity, rev::ControlType::kVelocity);
+  // }
   
-  if(gamepad2.GetRawButtonPressed(1)) {
-    DistanceToRPM(LimelightDistance());
-    frc::SmartDashboard::PutNumber("motorVelocity: ", motorVelocity);
-    flywheelPID.SetReference(-motorVelocity, rev::ControlType::kVelocity);
-  }
-  
-  if(gamepad2.GetRawButtonPressed(9)) {
-    flywheelPID.SetReference(0, rev::ControlType::kVelocity);
-  }
+  // if(gamepad2.GetRawButtonPressed(9)) {
+  //   flywheelPID.SetReference(0, rev::ControlType::kVelocity);
+  // }
 
   //lower port 
   // if(gamepad2.GetRawButton(3)) {
