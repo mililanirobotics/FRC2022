@@ -67,6 +67,9 @@ class Robot : public frc::TimedRobot {
   void spitEmOut();
   void tankDrive();
   void intakeEm();
+  void kentController();
+  void joshController();
+  void troyAndMichaelController();
 
   int getPosition();
 
@@ -87,6 +90,9 @@ class Robot : public frc::TimedRobot {
   //controller
   frc::Joystick gamepad1{0};
   frc::Joystick gamepad2{1};
+  frc::Joystick Attack31{2};
+  frc::Joystick Attack32{3};
+
 
   //gyro
   frc::ADXRS450_Gyro gyro;
@@ -110,6 +116,10 @@ class Robot : public frc::TimedRobot {
   frc::DigitalInput horizontalSwitch{1};//port will change 
   frc::DigitalInput verticalSwitch{2}; //port will change
 
+  //solenoids
+  frc::DoubleSolenoid rightSolenoid {9, frc::PneumaticsModuleType::REVPH, 0, 1};
+  frc::DoubleSolenoid leftSolenoid {9, frc::PneumaticsModuleType::REVPH, 2, 3};
+
   //constant variables
   const double wheelDiameterInches = 4; //TBD
   const double wheelCircumference = M_PI * wheelDiameterInches;
@@ -117,7 +127,7 @@ class Robot : public frc::TimedRobot {
   const double gearReduction = 6.89; //TBD
   const double countsPerInch = (countsPerRev * gearReduction)/wheelCircumference;
   const double degrees = 0;
-  const double robotRadius = 12; //TBD
+  const double robotRadius = 25; //TBD
   const double degreesToInches = (degrees * (M_PI / 180) * robotRadius);
 
   double distance;
@@ -137,13 +147,22 @@ class Robot : public frc::TimedRobot {
   double speedChange; 
   //Gamepad assignments:
   //Controller 1
-  double gamepad1_LStick = gamepad1.GetRawAxis(1);
-  double gamepad1_RStick = gamepad1.GetRawAxis(5);
-  double gamepad1_RTrigger = gamepad1.GetRawAxis(3);
+  double Attack31_LStick = Attack31.GetRawAxis(1);
+  double Attack32_RStick = Attack32.GetRawAxis(1);
+  bool Attack31_Trigger = Attack31.GetRawButtonPressed(1);
+  bool Attack32_Trigger = Attack32.GetRawButtonPressed(1);
+
   //Controller 2
   bool gamepad2_YButton = gamepad2.GetRawButtonPressed(4);
   bool gamepad2_XButton = gamepad2.GetRawButtonPressed(3);
   bool gamepad2_AButton = gamepad2.GetRawButtonPressed(1);
+  bool gamepad2_BButton = gamepad2.GetRawButtonPressed(2);
+  bool gamepad2_RightBumper = gamepad2.GetRawButtonPressed(6);
+  bool gamepad2_LeftBumper = gamepad2.GetRawButtonPressed(5);
+  bool gamepad2_Start = gamepad2.GetRawButtonPressed(8);
+  bool gamepad2_DadDown = gamepad2.GetPOV(8);
+  bool gamepad2_DpadUp = gamepad2.GetPOV(4);
+
   double gamepad2_LTrigger = gamepad2.GetRawAxis(2);
   double gamepad2_RTrigger = gamepad2.GetRawAxis(3);
 

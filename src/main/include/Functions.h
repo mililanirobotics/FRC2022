@@ -249,7 +249,7 @@ void Robot::ScoringCargo(){
     //vConveyorLeft.Set(0);
     //flywheel shooter and vertical conveyor are turned off 
   }
-  if (gamepad2.GetRawButtonPressed(1)){
+  if (gamepad2.GetRawButtonPressed(3)){
     //if the A button to score 2 cargo is pressed...assumes both cargo are already stored in conveyor
     flywheelShooter1.Set(1);
     //possibly add a wait command as flywheel rpm increases to shooting speed
@@ -368,6 +368,118 @@ int Robot::getPosition() {
     }
 }
 
+
+void::Robot::troyAndMichaelController(){
+   //left motors
+    if(Attack31.GetRawButtonPressed(1) && (Attack31.GetRawAxis(1) >= 0.1 || Attack31.GetRawAxis(1) <= -0.1)) {
+        leftFront.Set(Attack31.GetRawAxis(1) * 0.5);
+    }
+    else if(Attack31.GetRawAxis(1) >= 0.1 || Attack31.GetRawAxis(1) <= -0.1) {
+        leftFront.Set(Attack31.GetRawAxis(1));
+    }
+    else {
+        leftFront.Set(0);
+    }   
+  
+    //Right motors
+    if(Attack32.GetRawButtonPressed(1) && (Attack32.GetRawAxis(1) >= 0.1 || Attack32.GetRawAxis(1) <= -0.1)) {
+        rightFront.Set(-Attack32.GetRawAxis(1) * 0.5);
+    }
+    else if(Attack32.GetRawAxis(1) >= 0.1 || Attack32.GetRawAxis(1) <= -0.1) {
+        rightFront.Set(-Attack32.GetRawAxis(1));
+    }
+    else {
+        rightFront.Set(0);
+    }   
+}
+
+//Kent Prefrence
+
+void::Robot::kentController(){
+
+  if(gamepad2.GetRawButtonPressed(6)){
+    intake.Set(ControlMode::PercentOutput, 1);
+    hConveyor.Set(ControlMode::PercentOutput, 1);
+  }
+  else if(gamepad2.GetRawButtonPressed(5)){ 
+    intake.Set(ControlMode::PercentOutput, -1);
+    hConveyor.Set(ControlMode::PercentOutput, -1);
+  }
+  else {
+    intake.Set(ControlMode::PercentOutput, 0);
+    hConveyor.Set(ControlMode::PercentOutput, 0);
+  }
+
+  if(gamepad2.GetRawButtonPressed(2)){
+    vConveyorLeft.Set(ControlMode::PercentOutput, 1);
+    vConveyorRight.Set(ControlMode::PercentOutput, 1);
+  } else {
+    vConveyorLeft.Set(ControlMode::PercentOutput, 0);
+    vConveyorRight.Set(ControlMode::PercentOutput, 0);
+  }
+
+ 
+  int dpadDirection = gamepad2.GetPOV(0);
+
+  if(dpadDirection == 0){
+    rightSolenoid.Toggle();
+    leftSolenoid.Toggle();
+  } 
+  else if (dpadDirection ==180){
+    rightSolenoid.Set(frc::DoubleSolenoid::Value::kOff);
+    leftSolenoid.Set(frc::DoubleSolenoid::Value::kOff);
+  }
+  ScoringCargo();
+  }
+
+void Robot::joshController() {
+ 
+    if (gamepad2.GetRawAxis(2) >=0;05) {
+      intake.Set(ControlMode::PercentOutput, 1);
+      hConveyor.Set(ControlMode::PercentOutput, 1);
+    }
+    else if (gamepad2.GetRawAxis(3) >=0;05){
+      intake.Set(ControlMode::PercentOutput, -1);
+      hConveyor.Set(ControlMode::PercentOutput, -1);
+    }
+    else {
+      intake.Set(ControlMode::PercentOutput, 0);
+      hConveyor.Set(ControlMode::PercentOutput, 0);
+    }
+    
+    int dpadDirection = gamepad2.GetPOV(0);
+
+  if(dpadDirection == 0){
+    vConveyorLeft.Set(ControlMode::PercentOutput, 1);
+    vConveyorRight.Set(ControlMode::PercentOutput, 1);
+  } else {
+    vConveyorLeft.Set(ControlMode::PercentOutput, 0);
+    vConveyorRight.Set(ControlMode::PercentOutput, 0);
+  }
+
+  if (gamepad2.GetRawButtonPressed(6)){
+    rightSolenoid.Toggle();
+    leftSolenoid.Toggle();
+  } 
+  else if (gamepad2.GetRawButtonPressed(5)){
+    rightSolenoid.Set(frc::DoubleSolenoid::Value::kOff);
+    leftSolenoid.Set(frc::DoubleSolenoid::Value::kOff);
+  }
+
+  if (gamepad2.GetRawButtonPressed(3)){
+    lowerPortShot();
+  }
+  if (gamepad2.GetRawButtonPressed(4)){
+    ScoringCargo();
+  }
+  if (gamepad2.GetRawButtonPressed(1)){
+    limelightAlign();
+  }
+
+}
+
+
+//Josh preference
 void Robot::intakeEm() {
     if(gamepad2.GetRawButton(6)) {
         intake.Set(ControlMode::PercentOutput, 1);
@@ -380,44 +492,5 @@ void Robot::intakeEm() {
     else  {
         intake.Set(ControlMode::PercentOutput, 0);
         hConveyor.Set(ControlMode::PercentOutput, 0);
-    }
-}
-
-void Robot::tankDrive() {
-    if(gamepad1.GetRawAxis(3) >= 0.1 && (gamepad1.GetRawAxis(1) >= 0.1 || gamepad1.GetRawAxis(1) <= -0.1)) {
-        leftFront.Set(gamepad1.GetRawAxis(1) * 0.5);
-    }
-    else if(gamepad1.GetRawAxis(1) >= 0.1 || gamepad1.GetRawAxis(1) <= -0.1 && !isActive) {
-        leftFront.Set(gamepad1.GetRawAxis(1));
-    }
-    else {
-        leftFront.Set(0);
-    }   
-  
-    //Right motors
-    if(gamepad1.GetRawAxis(3) >= 0.1 && (gamepad1.GetRawAxis(5) >= 0.1 || gamepad1.GetRawAxis(5) <= -0.1)) {
-        rightFront.Set(-gamepad1.GetRawAxis(5) * 0.5);
-    }
-    else if(gamepad1.GetRawAxis(5) >= 0.1 || gamepad1.GetRawAxis(5) <= -0.1 && !isActive) {
-        rightFront.Set(-gamepad1.GetRawAxis(5));
-    }
-    else {
-        rightFront.Set(0);
-    }
-}
-
-void Robot::spitEmOut() {
-    
-    if (gamepad2.GetRawButton(1)) {
-        intake.Set(ControlMode::PercentOutput, -1);
-        hConveyor.Set(ControlMode::PercentOutput, -1);
-        vConveyorLeft.Set(ControlMode::PercentOutput, -1);
-        vConveyorRight.Set(ControlMode::PercentOutput, -1);
-    }
-    else {
-        intake.Set(ControlMode::PercentOutput, 0);
-        hConveyor.Set(ControlMode::PercentOutput, 0);
-        vConveyorLeft.Set(ControlMode::PercentOutput, 0);
-        vConveyorRight.Set(ControlMode::PercentOutput, 0);
     }
 }
