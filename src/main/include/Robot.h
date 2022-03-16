@@ -33,6 +33,9 @@
 //gyro
 #include <frc/ADXRS450_Gyro.h>
 
+//timer
+#include <frc/Timer.h>
+
 
 
 class Robot : public frc::TimedRobot {
@@ -65,7 +68,7 @@ class Robot : public frc::TimedRobot {
   void flywheel(double speed, double rotations, double timeoutSeconds);
   void turnDrive(double speed, double degrees, double timeoutSeconds);
 
-  void calculateRotateValue(double distance, double speed);
+  void drive(double distance, double speed);
 
   int getPosition();
 
@@ -124,17 +127,24 @@ class Robot : public frc::TimedRobot {
   
   
   //score cargo method
-  
-  //timer
+
+  //frc::Timer *pTimer = new frc::Timer();
   
 
+  units::time::second_t previousTime; 
+  units::time::second_t alignPreviousTime;
+  units::time::second_t elapsedTime;
+  units::time::second_t alignElapsedTime;
+  units::time::second_t startTime;
+
   double gyroAngle; 
-  double& error = gyroAngle;
+  double error = gyroAngle;
   double speedFactor = error * 0.65; //arbitrary number (to be tested)
   double targetDistance; 
   double fractionOfTargetDistance;
 
   bool functionCompleted;
+  bool alignmentComplete;
 
   double averageActualDistance;
   double speedChange; 

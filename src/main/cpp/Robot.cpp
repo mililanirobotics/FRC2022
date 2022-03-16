@@ -6,13 +6,13 @@
 #include "Robot.h"
 #include "Functions.h"
 
+#include <iostream>
 #include <fmt/core.h>
 #include <units/time.h>
 
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <ctime> 
 #include <time.h>
-#include <frc/Timer.h>
 #include <thread>
 //limelight stuff
 #include "frc/smartdashboard/Smartdashboard.h"
@@ -22,6 +22,10 @@
 #include "networktables/NetworkTableValue.h"
 #include "wpi/span.h"
 #include <Math.h>
+
+//testing
+#include <frc/Timer.h>
+
 
 void Robot::RobotInit() {
   m_chooser.SetDefaultOption(kAutoNameDefault, kAutoNameDefault);
@@ -92,40 +96,64 @@ void Robot::AutonomousInit() {
     encoderDriveRunning = false;
     hasRun = false;
 
-    pTimer->Reset();
+    sTimer->Reset();
+    aTimer->Reset();
 
   } else {
     // Default Auto goes here
+    distance = frc::SmartDashboard::GetNumber("Distance In Inches", 12);
+    leftEncoder.SetPosition(0);
+    rightEncoder.SetPosition(0);
+    gyro.Reset();
+
+    functionCompleted = 0;
+    encoderDriveRunning = true;
+    
+    alignmentComplete = false;
+
+    aTimer = new frc::Timer();
+    sTimer = new frc::Timer();
+    
+    aTimer->Start();
+    sTimer->Start();
+
+    alignElapsedTime = units::second_t(0);  
+    elapsedTime = units::second_t(0);
+    alignPreviousTime = units::second_t(0);
+    previousTime = units::second_t(0);
   }
 }
 
 void Robot::AutonomousPeriodic() {
   if (m_autoSelected == kAutoNameCustom) {
     // Custom Auto goes here
-    //autoLimelightAlign();
-    //calculateRotateValue(-120, 0.25);
-    
-    if ((functionCompleted == 0) && (encoderDriveRunning == false)){
-       shoot();
-    }
-      
-    
-    //frc::Wait(units::second_t(3));
-
     
 
+    // autoLimelightAlign();
+    
+    // if ((functionCompleted == 0) && (encoderDriveRunning == false)){
+    //    shoot();
+    // }
     //ShootemQuickie();
 
-
-
-
-    frc::SmartDashboard::PutNumber("Gyro Status", gyro.GetAngle());
-    frc::SmartDashboard::PutNumber("Right Encoder Status", rightEncoder.GetPosition());
-    frc::SmartDashboard::PutNumber("Left Encoder Status", leftEncoder.GetPosition());
+    //frc::SmartDashboard::PutNumber("Gyro Status", gyro.GetAngle());
+    //frc::SmartDashboard::PutNumber("Right Encoder Status", rightEncoder.GetPosition());
+    //frc::SmartDashboard::PutNumber("Left Encoder Status", leftEncoder.GetPosition());
   } else {
     // Default Auto goes here
-    
+    if(encoderDriveRunning) {
+      drive(-100, -0.5);
+    }
+
+    if ((functionCompleted == 0) && (encoderDriveRunning == false) && (!alignmentComplete)){   
+      autoLimelightAlign();
+      
+    }
+    if ((functionCompleted == 0) && (encoderDriveRunning == false) && (alignmentComplete)) {
+      shoot();
+    }
   }
+
 }
 
 void Robot::TeleopInit() {

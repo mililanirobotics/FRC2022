@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include <string>
 #include "Robot.h"
 
@@ -30,7 +31,10 @@
 //gyro
 #include <frc/ADXRS450_Gyro.h>
 
-frc::Timer *pTimer;
+using namespace std;
+
+frc::Timer *sTimer;
+frc::Timer *aTimer;
 
 double Robot::LimelightDistance() {
     auto inst = nt::NetworkTableInstance::GetDefault();
@@ -91,59 +95,71 @@ double Robot::GetMedian(double value1, double value2, double value3) {
   
 }
 
-void Robot::calculateRotateValue(double distance, double speed) {
+//the distance can be a positive or a negative
+//input a negative speed to go backwards, positive to go forwards
+void Robot::drive(double distance, double speed) {
   gyroAngle = gyro.GetAngle();
   targetDistance = distance * countsPerInch;
   averageActualDistance = (-(leftEncoder.GetPosition()) + rightEncoder.GetPosition())/2;
   speedChange = averageActualDistance/targetDistance;
-  fractionOfTargetDistance = targetDistance * (2/3); //to be adjusted
+  fractionOfTargetDistance = targetDistance * (1.0/3); //to be adjusted
   
   speedFactor = error * 0.1; //arbitrary number (to be tested)
 
-  if (-(leftEncoder.GetPosition()) < targetDistance && rightEncoder.GetPosition() < targetDistance){
-    
-      if (-(leftEncoder.GetPosition()) >= fractionOfTargetDistance && rightEncoder.GetPosition() >= fractionOfTargetDistance) {
-        //speed *=  (1 - speedChange);
-        if(error > 1){
-          rightFront.Set(speed + (speed * speedFactor));
-          leftFront.Set(-speed);
+  if (abs(leftEncoder.GetPosition()) < abs(targetDistance) && abs(rightEncoder.GetPosition()) < abs(targetDistance)){
+    if(error > 1){
+      rightFront.Set(speed + (speed * speedFactor));
+      leftFront.Set(-speed);
         
-        } else if (error < -1) {
-          leftFront.Set(-(speed + (speed * speedFactor)));
-          rightFront.Set(speed); 
+    } else if (error < -1) {
+      leftFront.Set(-(speed + (speed * speedFactor)));
+      rightFront.Set(speed); 
           
-        } else {
-          rightFront.Set(speed);
-          leftFront.Set(-speed); 
+    } else {
+      rightFront.Set(speed);
+      leftFront.Set(-speed); 
           
-        }
-      }
+    }
+
+  if (abs(leftEncoder.GetPosition()) >= abs(fractionOfTargetDistance) && abs(rightEncoder.GetPosition()) >= abs(fractionOfTargetDistance)) {
+    speed /= 8;     
+  }
       /*
       } else if (-(leftEncoder.GetPosition()) >= targetDistance && (rightEncoder.GetPosition()) >= targetDistance){
         rightFront.Set(0);
         leftFront.Set(0);*/
     
-  } else if (-(leftEncoder.GetPosition()) > targetDistance && rightEncoder.GetPosition() > targetDistance) {
+
+  } else if (abs(leftEncoder.GetPosition()) < abs(targetDistance) && abs(rightEncoder.GetPosition()) < abs(targetDistance)) {
       if (error > 1) {
-          rightFront.Set(-(speed + (speed * speedFactor)));
-          leftFront.Set(speed);
-
+        rightFront.Set(-(speed + (speed * speedFactor)));
+        leftFront.Set(speed);
+      } 
+      else if (error < -1) {
+        leftFront.Set((speed + (speed * speedFactor)));
+        rightFront.Set(-speed); 
           
-
-        } else if (error < -1) {
-          leftFront.Set((speed + (speed * speedFactor)));
-          rightFront.Set(-speed); 
-          
-        }
-        else {
-          rightFront.Set(-speed);
-          leftFront.Set(speed); 
-        }
+      }
+      else {
+        rightFront.Set(-speed);
+        leftFront.Set(speed); 
+      }
+    if (abs(leftEncoder.GetPosition()) <= abs(fractionOfTargetDistance) && abs(rightEncoder.GetPosition()) <= abs(fractionOfTargetDistance)) {
+      speed /= 2;     
+    }
   } else {
-      leftFront.Set(0);
-      rightFront.Set(0);
+    leftFront.Set(0);
+    rightFront.Set(0);
 
-      encoderDriveRunning = false;
+    encoderDriveRunning = false;
+    sTimer->Reset();
+    aTimer->Reset();
+
+    frc::SmartDashboard::PutNumber("Left Encoder value", -leftEncoder.GetPosition());
+    frc::SmartDashboard::PutNumber("Right Encoder value", rightEncoder.GetPosition());
+    frc::SmartDashboard::PutNumber("target", targetDistance);
+
+
   }
 }  
 
@@ -209,73 +225,81 @@ void Robot::limelightAlign() {
 
 void Robot::autoLimelightAlign() {
   //remakes the limelight data table
-  if (!hasRun) {
-    auto inst = nt::NetworkTableInstance::GetDefault();
-    auto limelight = inst.GetTable("limelight");
+  //timer testing
+  auto alignTime = aTimer->Get();  
+  alignElapsedTime += (alignTime - alignPreviousTime);
+  
+  if(alignElapsedTime >= units::second_t(2)) {
     
-    //needs to be configured 
-    float constant = 0.01; 
-    float min_command = 0.05f;
-    double leftChange, rightChange;
+      auto inst = nt::NetworkTableInstance::GetDefault();
+      auto limelight = inst.GetTable("limelight");
+      
+      //needs to be configured 
+      float constant = 0.01; 
+      float min_command = 0.05f;
+      double leftChange, rightChange;
 
-    //current speed of the motors
-    double leftSpeed = leftFront.GetAppliedOutput();
-    double rightSpeed = rightFront.GetAppliedOutput();
+      //current speed of the motors
+      double leftSpeed = leftFront.GetAppliedOutput();
+      double rightSpeed = rightFront.GetAppliedOutput();
 
-    targetOffsetAngle_Horizontal = limelight->GetNumber("tx",0.0);
-    frc::SmartDashboard::PutNumber("horizontal offset", targetOffsetAngle_Horizontal);
-    
-      if((targetOffsetAngle_Horizontal > 5.2)) {
-        leftChange = constant * abs(targetOffsetAngle_Horizontal) + 0.1;
-        rightChange = -(constant * abs(targetOffsetAngle_Horizontal) + 0.1);
+      targetOffsetAngle_Horizontal = limelight->GetNumber("tx",0.0);
+      frc::SmartDashboard::PutNumber("horizontal offset", targetOffsetAngle_Horizontal);
+      
+        if((targetOffsetAngle_Horizontal > 3)) {
+          leftChange = constant * abs(targetOffsetAngle_Horizontal) + 0.1;
+          rightChange = -(constant * abs(targetOffsetAngle_Horizontal) + 0.1);
 
-        leftSpeed = leftChange;      
-        rightSpeed = rightChange;
+          leftSpeed = leftChange;      
+          rightSpeed = rightChange;
 
-        frc::SmartDashboard::PutNumber("left motor speed", leftSpeed);
-        frc::SmartDashboard::PutNumber("left motor speed", rightSpeed);
+          frc::SmartDashboard::PutNumber("left motor speed", leftSpeed);
+          frc::SmartDashboard::PutNumber("left motor speed", rightSpeed);
 
-        leftFront.Set(-leftSpeed);
-        rightFront.Set(rightSpeed);
-      }
-      else if((targetOffsetAngle_Horizontal < -5.2)) {
-        leftChange = (constant * abs(targetOffsetAngle_Horizontal) + 0.1);
-        rightChange = constant * abs(targetOffsetAngle_Horizontal) + 0.1;
+          leftFront.Set(-leftSpeed);
+          rightFront.Set(rightSpeed);
+        }
+        else if((targetOffsetAngle_Horizontal < -3)) {
+          leftChange = (constant * abs(targetOffsetAngle_Horizontal) + 0.1);
+          rightChange = constant * abs(targetOffsetAngle_Horizontal) + 0.1;
 
-        leftSpeed = leftChange;
-        rightSpeed = rightChange;
+          leftSpeed = leftChange;
+          rightSpeed = rightChange;
 
-        frc::SmartDashboard::PutNumber("left motor speed", leftSpeed);
-        frc::SmartDashboard::PutNumber("left motor speed", rightSpeed);
+          frc::SmartDashboard::PutNumber("left motor speed", leftSpeed);
+          frc::SmartDashboard::PutNumber("left motor speed", rightSpeed);
+          
+          leftFront.Set(leftSpeed);
+          rightFront.Set(rightSpeed);
+        } else {
+          leftFront.Set(0);
+          rightFront.Set(0);
+          alignmentComplete = true;
+          //delete aTimer;
+        }
+
         
-        leftFront.Set(leftSpeed);
-        rightFront.Set(rightSpeed);
-      } else {
-        leftFront.Set(0);
-        rightFront.Set(0);
-      }
+      alignPreviousTime = alignTime; 
 
-      bool hasRun = true;
+    
   }
 }
 
 void Robot::shoot(){
   
   //autoLimelightAlign();
-  pTimer = new frc::Timer();
+ 
   
   DistanceToRPM(LimelightDistance());
   flywheelPID.SetReference(-motorVelocity, rev::ControlType::kVelocity);
   frc::SmartDashboard::PutNumber("MotorVelocity", motorVelocity);
-  pTimer->Start();
-  auto time = pTimer->Get();
-  if (time >= units::second_t(3)) {
-    intake.Set(ControlMode::PercentOutput, 1);
-    vConveyorLeft.Set(ControlMode::PercentOutput, 1);
-    vConveyorRight.Set(ControlMode::PercentOutput, -1);
-    hConveyor.Set(ControlMode::PercentOutput, 1);
-  }
-  else if (time >= units::second_t(5)) {
+  
+  
+  auto time = sTimer->Get();  
+  
+  elapsedTime += (time - previousTime);
+
+  if (elapsedTime >= units::second_t(5)) {
     intake.Set(ControlMode::PercentOutput, 0);
     vConveyorLeft.Set(ControlMode::PercentOutput, 0);
     vConveyorRight.Set(ControlMode::PercentOutput, 0);
@@ -284,8 +308,18 @@ void Robot::shoot(){
     flywheelPID.SetReference(0, rev::ControlType::kVelocity);
 
     functionCompleted = 1;
+    //delete sTimer;
   }
+  else if (elapsedTime >= units::second_t(3)) {
+    intake.Set(ControlMode::PercentOutput, 1);
+    vConveyorLeft.Set(ControlMode::PercentOutput, 1);
+    vConveyorRight.Set(ControlMode::PercentOutput, -1);
+    hConveyor.Set(ControlMode::PercentOutput, 1);
+  }
+  
+  previousTime = time; 
 }
+  
 
 void Robot::encoderDrive(double speed, double leftInches, double rightInches, double timeoutSeconds) {
   int newLeftTarget;
