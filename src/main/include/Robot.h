@@ -113,8 +113,8 @@ class Robot : public frc::TimedRobot {
   rev::SparkMaxRelativeEncoder flywheelEncoder = flywheelShooter1.GetEncoder();
 
   //micro-switches
-  frc::DigitalInput horizontalSwitch{1};//port will change 
-  frc::DigitalInput verticalSwitch{2}; //port will change
+  frc::DigitalInput horizontalSwitch{0};//port will change 
+  frc::DigitalInput verticalSwitch{1}; //port will change
 
   //solenoids
   frc::DoubleSolenoid rightSolenoid {9, frc::PneumaticsModuleType::REVPH, 0, 1};
