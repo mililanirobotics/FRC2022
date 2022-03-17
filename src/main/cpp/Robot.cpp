@@ -79,22 +79,37 @@ void Robot::AutonomousInit() {
   if (m_autoSelected == kAutoNameCustom) {
     // Custom Auto goes here
     // 
-    distance = frc::SmartDashboard::GetNumber("Distance In Inches", 12);
-    leftEncoder.SetPosition(0);
-    rightEncoder.SetPosition(0);
-    gyro.Reset();
+    
 
   functionCompleted = 0;
 
   } else {
     // Default Auto goes here
+     leftEncoder.SetPosition(0);
+    rightEncoder.SetPosition(0);
+    gyro.Reset();
+
+    functionCompleted = 0;
+    encoderDriveRunning = true;
+    
+    alignmentComplete = false;
+
+    aTimer = new frc::Timer();
+    sTimer = new frc::Timer();
+    
+    aTimer->Start();
+    sTimer->Start();
+
+    alignElapsedTime = units::second_t(0);  
+    elapsedTime = units::second_t(0);
+    alignPreviousTime = units::second_t(0);
+    previousTime = units::second_t(0);
   }
 }
 
 void Robot::AutonomousPeriodic() {
   if (m_autoSelected == kAutoNameCustom) {
     // Custom Auto goes here
-    calculateRotateValue(100, 0.25);  
     
     //frc::Wait(units::second_t(3));
 
@@ -112,7 +127,17 @@ void Robot::AutonomousPeriodic() {
     frc::SmartDashboard::PutNumber("Left Encoder Status", leftEncoder.GetPosition());
   } else {
     // Default Auto goes here
-    
+    if(encoderDriveRunning) {
+      drive(-100, -0.5);
+    }
+
+    if ((functionCompleted == 0) && (encoderDriveRunning == false) && (!alignmentComplete)){   
+      autoLimelightAlign();
+      
+    }
+    if ((functionCompleted == 0) && (encoderDriveRunning == false) && (alignmentComplete)) {
+      shoot();
+    }
   }
 }
 
@@ -124,80 +149,9 @@ void Robot::TeleopInit() {
 //1300 is adequate rpm for low scoring.
 
 void Robot::TeleopPeriodic() {
-  // if(gamepad1.GetRawButtonPressed(2)) {
-  //   LimelightDistance();
-  // }
-  // if(gamepad2.GetRawButton(3)) {
-  //   intake.Set(ControlMode::PercentOutput, 1);
-  // }
-  // else {
-  //   intake.Set(ControlMode::PercentOutput, 0);
-  // }
- 
-  // if(gamepad1.GetRawButtonPressed(3)) {
-  //   motorVelocity += 100;
-  //   //frc::SmartDashboard::PutNumber("True rpm", motorVelocity);
-  // }
-  //limelight align
-  //ShootemQuickie();
-  
-  //Left motors
-  if(gamepad1.GetRawAxis(3) >= 0.1 && (gamepad1.GetRawAxis(1) >= 0.1 || gamepad1.GetRawAxis(1) <= -0.1)) {
-    leftFront.Set(gamepad1.GetRawAxis(1) * 0.5);
-  }
-  else if(gamepad1.GetRawAxis(1) >= 0.1 || gamepad1.GetRawAxis(1) <= -0.1 && !isActive) {
-    leftFront.Set(gamepad1.GetRawAxis(1));
-  }
-  else {
-    leftFront.Set(0);
-  }   
-  
-  //Right motors
-  if(gamepad1.GetRawAxis(3) >= 0.1 && (gamepad1.GetRawAxis(5) >= 0.1 || gamepad1.GetRawAxis(5) <= -0.1)) {
-    rightFront.Set(-gamepad1.GetRawAxis(5) * 0.5);
-  }
-  else if(gamepad1.GetRawAxis(5) >= 0.1 || gamepad1.GetRawAxis(5) <= -0.1 && !isActive) {
-    rightFront.Set(-gamepad1.GetRawAxis(5));
-  }
-  else {
-    rightFront.Set(0);
-  }
-
-  //intake
-  if(gamepad2.GetRawButton(1)) {
-    intake.Set(ControlMode::PercentOutput, 1);
-  }
-  else  {
-    intake.Set(ControlMode::PercentOutput, 0);
-  }
-
-  //shoot
-  if(gamepad2.GetRawButton(2)) {
-    ShootemQuickie();
-  }
-
-  //lower port 
-  if(gamepad2.GetRawButton(3)) {
-    lowerPortShot();
-  }
- 
-  // if(b && leftStickY >= 0.05) {
-  //   L1Motor.Set(-leftStickY * 0.5);
-  //   L2Motor.Set(-leftStickY * 0.5);
-  // }
-  // else if(y && leftStickY >= 0.05) {
-  //   L1Motor.Set(-leftStickY);
-  //   L2Motor.Set(-leftStickY);
-  // }
-
-  // if(rightStickY >= 0.05) {
-  //   L1Motor.Set(-rightStickY);
-  //   L2Motor.Set(-rightStickY);
-  // }
-  
-  //actual teleop
-    //Drive + slow mode
-
+  troyAndMichaelController();
+  //joshController();
+  //kentController();
 }
 
 void Robot::DisabledInit() {}

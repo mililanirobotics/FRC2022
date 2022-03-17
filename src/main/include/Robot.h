@@ -1,7 +1,3 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 #pragma once
 
 #include <string>
@@ -33,6 +29,9 @@
 //gyro
 #include <frc/ADXRS450_Gyro.h>
 
+//timer
+#include <frc/Timer.h>
+
 
 
 class Robot : public frc::TimedRobot {
@@ -58,6 +57,9 @@ class Robot : public frc::TimedRobot {
   void ShootemQuickie();
   void ScoringCargo();
   void lowerPortShot();
+  void kentController();
+  void joshController();
+  void troyAndMichaelController();
 
   void encoderDrive(double speed, double leftInches, double rightInches, double timeoutSeconds);
   void horizontalConveyor(double speed, double rotations, double timeoutSeconds);
@@ -65,12 +67,11 @@ class Robot : public frc::TimedRobot {
   void flywheel(double speed, double rotations, double timeoutSeconds);
   void turnDrive(double speed, double degrees, double timeoutSeconds);
 
-  void calculateRotateValue(double distance, double speed);
+  void drive(double distance, double speed);
 
   int getPosition();
 
  //CIMs  
-  TalonSRX C1Motor{10};
   TalonSRX C2Motor{11};
 
   TalonSRX hConveyor{18};
@@ -82,10 +83,13 @@ class Robot : public frc::TimedRobot {
   rev::SparkMaxPIDController rightDrive = rightFront.GetPIDController();
   rev::SparkMaxPIDController leftDrive = leftFront.GetPIDController();
 
+  
 
   //controller
   frc::Joystick gamepad1{0};
   frc::Joystick gamepad2{1};
+  frc::Joystick Attack31{2};
+  frc::Joystick Attack32{3};
 
   //gyro
   frc::ADXRS450_Gyro gyro;
@@ -102,13 +106,17 @@ class Robot : public frc::TimedRobot {
   //encoders
   rev::SparkMaxRelativeEncoder leftEncoder = leftFront.GetEncoder();
   rev::SparkMaxRelativeEncoder rightEncoder = rightFront.GetEncoder();
-  //rev::SparkMaxRelativeEncoder verticalConveyorEncoder = conveyorVertical.GetEncoder();
-  //rev::SparkMaxRelativeEncoder horizontalConveyorEncoder = conveyorHorizontal.GetEncoder();
   rev::SparkMaxRelativeEncoder flywheelEncoder = flywheelShooter1.GetEncoder();
 
+
+  //micro-switches
   frc::DigitalInput horizontalSwitch{1};//port will change 
   frc::DigitalInput verticalSwitch{2}; //port will change
 
+  //solenoids
+  //  frc::DoubleSolenoid rightSolenoid {9, frc::PneumaticsModuleType::REVPH, 0, 1};
+  //  frc::DoubleSolenoid leftSolenoid {9, frc::PneumaticsModuleType::REVPH, 2, 3};
+  
   //constant variables
   const double wheelDiameterInches = 4; //TBD
   const double wheelCircumference = M_PI * wheelDiameterInches;
@@ -119,13 +127,21 @@ class Robot : public frc::TimedRobot {
   const double robotRadius = 25; //TBD
   const double degreesToInches = (degrees * (M_PI / 180) * robotRadius);
 
+  bool hasRun = false;
   double distance;
   //Switch declarations
   
   
   //score cargo method
+
+  //frc::Timer *pTimer = new frc::Timer();
   
 
+  units::time::second_t previousTime; 
+  units::time::second_t alignPreviousTime;
+  units::time::second_t elapsedTime;
+  units::time::second_t alignElapsedTime;
+  units::time::second_t startTime;
 
   double gyroAngle; 
   double error = gyroAngle;
@@ -134,6 +150,7 @@ class Robot : public frc::TimedRobot {
   double fractionOfTargetDistance;
 
   bool functionCompleted;
+  bool alignmentComplete;
 
   double averageActualDistance;
   double speedChange; 
@@ -169,6 +186,8 @@ class Robot : public frc::TimedRobot {
   double kP = 0.000001, kFF = 0.00015283, kMaxoutput = 1, kminoutput = -1, kI = 1e-4, kD = 1;
   double motorVelocity = 0;
   double trueVelocity;
+
+  bool encoderDriveRunning = true;
 
   bool isActive;
 
