@@ -113,8 +113,15 @@ void Robot::TeleopInit() {
 //1300 is adequate rpm for low scoring.
 
 void Robot::TeleopPeriodic() {
+  vConveyorLeft.Set(ControlMode::PercentOutput, 0);
+  vConveyorRight.Set(ControlMode::PercentOutput, 0);
+  hConveyor.Set(ControlMode::PercentOutput, 0);
+  intake.Set(ControlMode:: PercentOutput, 0);
+
+  if (gamepad2.GetRawAxis(2) >= 0.1){
   microswitchIntake();
   ScoringCargo();
+  }
   frc::SmartDashboard::PutNumber("SwitchOutput", horizontalSwitch.Get());
   // if(gamepad1.GetRawButtonPressed(2)) {
   //   LimelightDistance();

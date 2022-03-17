@@ -398,75 +398,61 @@ int Robot::getPosition() {
 }
 
 void Robot::microswitchIntake(){
-    while (gamepad2.GetRawAxis(2) >= 0.1){
-     //if left trigger is pressed...
 
-    getPosition();
     
+    frc::SmartDashboard::PutNumber("GetPosition function", getPosition());
     if (getPosition() == 1){
        //if both switches sense cargo...
     
-      hConveyor.Set(ControlMode::PercentOutput, 1);
-      intake.Set(ControlMode::PercentOutput,1);
+      hConveyor.Set(ControlMode::PercentOutput, 0);
+      intake.Set(ControlMode::PercentOutput,0);
       vConveyorLeft.Set(ControlMode::PercentOutput, 0);
       vConveyorRight.Set(ControlMode::PercentOutput, 0);
        //conveyor motors will not turn on because robot already possesses two cargo
 
-       ScoringCargo();
-       //scoring function is called
 
      } else if (getPosition() == 2){
        //if horizontal switch senses cargo and vertical switch does not sense cargo...
 
-         while (verticalSwitch.Get() == 0){
+         if (verticalSwitch.Get() == 0){
           vConveyorLeft.Set(ControlMode::PercentOutput, 1);
           vConveyorRight.Set(ControlMode::PercentOutput, -1);
+          hConveyor.Set(ControlMode::PercentOutput, 1);
       } //vertical conveyor will turn on until cargo moves to vertical sensor position
 
-         while (horizontalSwitch.Get() == 0){
+         if (horizontalSwitch.Get() == 0){
           hConveyor.Set(ControlMode::PercentOutput, 1);
           intake.Set(ControlMode::PercentOutput,1);
          } //horizontal conveyor will turn on until cargo moves to horizontal sensor position
-
-     ScoringCargo();
-       //scoring function is called
     
      } else if (getPosition() == 3){
        //if horizontal switch does not sense cargo and vertical switch senses cargo...
 
-         while (horizontalSwitch.Get() == 0){
+         if (horizontalSwitch.Get() == 0){
            hConveyor.Set(ControlMode::PercentOutput, 1);
            intake.Set(ControlMode::PercentOutput,1);
         } //horizontal conveyor will turn on until cargo moves to horizontal sensor position
 
-         ScoringCargo();
-        //scoring function is called
-
         }  else if (getPosition() == 4){
        //if both horizontal and vertical switch do not sense cargo 
 
-        while (horizontalSwitch.Get() == 0){
+        if (verticalSwitch.Get() == 0){
+          vConveyorLeft.Set(ControlMode::PercentOutput, 1);
+          vConveyorRight.Set(ControlMode::PercentOutput, -1);
+         } //vertical conveyor will turn on until cargo moves to vertical sensor position
+        
+        if (horizontalSwitch.Get() == 0){
            hConveyor.Set(ControlMode::PercentOutput, 1);
            intake.Set(ControlMode::PercentOutput,1);
          } //horizontal conveyor will turn on until cargo moves to horizontal sensor position
 
-        while (verticalSwitch.Get() == 0){
-          vConveyorLeft.Set(ControlMode::PercentOutput, 1);
-          vConveyorRight.Set(ControlMode::PercentOutput, -1);
-         } //vertical conveyor will turn on until cargo moves to vertical sensor position
-
-        ScoringCargo();
-         //scoring function is called
-
      } else {
-
-        hConveyor.Set(ControlMode::PercentOutput, 0);
         vConveyorLeft.Set(ControlMode::PercentOutput, 0);
         vConveyorRight.Set(ControlMode::PercentOutput, 0);
+        hConveyor.Set(ControlMode::PercentOutput, 0);
         intake.Set(ControlMode:: PercentOutput, 0);
 
      }
-   }
 
 }
 
