@@ -66,16 +66,11 @@ class Robot : public frc::TimedRobot {
   void turnDrive(double speed, double degrees, double timeoutSeconds);
 
   void calculateRotateValue(double distance, double speed);
+  void microswitchIntake();
 
   int getPosition();
 
- //CIMs  
-  TalonSRX C2Motor{11};
-
-  TalonSRX hConveyor{18};
-  TalonSRX intake{21};
-  TalonSRX vConveyorLeft{20};
-  TalonSRX vConveyorRight{19};
+ 
   //pidcontroller  
   rev::SparkMaxPIDController flywheelPID = flywheelShooter1.GetPIDController();
   rev::SparkMaxPIDController rightDrive = rightFront.GetPIDController();
@@ -93,7 +88,11 @@ class Robot : public frc::TimedRobot {
   rev::CANSparkMax rightBack {11, rev::CANSparkMax::MotorType::kBrushless};
   rev::CANSparkMax leftFront {12, rev::CANSparkMax::MotorType::kBrushless};
   rev::CANSparkMax leftBack {13, rev::CANSparkMax::MotorType::kBrushless}; 
-  
+  rev::CANSparkMax hConveyor {18, rev::CANSparkMax::MotorType::kBrushless}; 
+  rev::CANSparkMax vConveyorLeft {20, rev::CANSparkMax::MotorType::kBrushless}; 
+  rev::CANSparkMax vConveyorRight {19, rev::CANSparkMax::MotorType::kBrushless}; 
+  rev::CANSparkMax intake {21, rev::CANSparkMax::MotorType::kBrushless}; 
+
   rev::CANSparkMax flywheelShooter1 {16, rev::CANSparkMax::MotorType::kBrushless};  
   //follows flywheelShooter1
   rev::CANSparkMax flywheelShooter2 {17, rev::CANSparkMax::MotorType::kBrushless};

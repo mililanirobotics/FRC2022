@@ -177,10 +177,10 @@ void Robot::TeleopPeriodic() {
 
   //intake
   if(gamepad2.GetRawButton(1)) {
-    intake.Set(ControlMode::PercentOutput, 1);
+    intake.Set(1);
   }
   else  {
-    intake.Set(ControlMode::PercentOutput, 0);
+    intake.Set(0);
   }
 
   //shoot

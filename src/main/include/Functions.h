@@ -270,16 +270,16 @@ void Robot::shoot(){
   pTimer->Start();
   auto time = pTimer->Get();
   if (time >= units::second_t(3)) {
-    intake.Set(ControlMode::PercentOutput, 1);
-    vConveyorLeft.Set(ControlMode::PercentOutput, 1);
-    vConveyorRight.Set(ControlMode::PercentOutput, -1);
-    hConveyor.Set(ControlMode::PercentOutput, 1);
+    intake.Set(1);
+    vConveyorLeft.Set(1);
+    vConveyorRight.Set(-1);
+    hConveyor.Set(1);
   }
   else if (time >= units::second_t(5)) {
-    intake.Set(ControlMode::PercentOutput, 0);
-    vConveyorLeft.Set(ControlMode::PercentOutput, 0);
-    vConveyorRight.Set(ControlMode::PercentOutput, 0);
-    hConveyor.Set(ControlMode::PercentOutput, 0);
+    intake.Set(0);
+    vConveyorLeft.Set(0);
+    vConveyorRight.Set(0);
+    hConveyor.Set(0);
 
     flywheelPID.SetReference(0, rev::ControlType::kVelocity);
 
@@ -380,21 +380,21 @@ void Robot::ShootemQuickie() {
     
     //NOTE: Setting target velocity = setting target RPM
     isActive = true;
-    hConveyor.Set(ControlMode::PercentOutput, 1);
+    hConveyor.Set(1);
     //DistanceToRPM(LimelightDistance());
     trueVelocity = motorVelocity * 2.123;
     flywheelPID.SetReference(-trueVelocity, rev::ControlType::kVelocity);
     frc::Wait(units::second_t(1));
 
-    vConveyorLeft.Set(ControlMode::PercentOutput, 1);
-    vConveyorRight.Set(ControlMode::PercentOutput,-1);
+    vConveyorLeft.Set(1);
+    vConveyorRight.Set(-1);
     
     frc::Wait(units::second_t(4));
     
-    intake.Set(ControlMode::PercentOutput, 0);
-    hConveyor.Set(ControlMode::PercentOutput, 0);
-    vConveyorLeft.Set(ControlMode::PercentOutput, 0);
-    vConveyorRight.Set(ControlMode::PercentOutput, 0);
+    intake.Set(0);
+    hConveyor.Set(0);
+    vConveyorLeft.Set(0);
+    vConveyorRight.Set(0);
 
     // flywheelPID.SetReference(-trueVelocity/2, rev::ControlType::kVelocity);
     // frc::Wait(units::second_t(1));
@@ -417,20 +417,20 @@ void Robot::lowerPortShot() {
     //NOTE: Setting target velocity = setting target RPM
     isActive = true;
 
-    hConveyor.Set(ControlMode::PercentOutput, 1);
+    hConveyor.Set(1);
     //DistanceToRPM(LimelightDistance());
     flywheelPID.SetReference(-1300, rev::ControlType::kVelocity);
     frc::Wait(units::second_t(1));
 
-    vConveyorLeft.Set(ControlMode::PercentOutput, 1);
-    vConveyorRight.Set(ControlMode::PercentOutput,-1);
+    vConveyorLeft.Set(1);
+    vConveyorRight.Set(-1);
     
     frc::Wait(units::second_t(4));
     
-    intake.Set(ControlMode::PercentOutput, 0);
-    hConveyor.Set(ControlMode::PercentOutput, 0);
-    vConveyorLeft.Set(ControlMode::PercentOutput, 0);
-    vConveyorRight.Set(ControlMode::PercentOutput, 0);
+    intake.Set(0);
+    hConveyor.Set(0);
+    vConveyorLeft.Set(0);
+    vConveyorRight.Set(0);
 
     flywheelPID.SetReference(0, rev::ControlType::kVelocity);
     
@@ -446,25 +446,85 @@ void Robot::DistanceToRPM (double distance) {
   distance = distance/12;
   motorVelocity = (int)(5.76*(distance*distance) + (5.39*distance) + 3670);
 }
-
 int Robot::getPosition() {
-    if (horizontalSwitch.Get() == 0 && verticalSwitch.Get() == 0){
+    while (horizontalSwitch.Get() == 1 && verticalSwitch.Get() == 1){
         //if both switches sense cargo...
         return 1;
-
-    } else if (horizontalSwitch.Get() == 0 && verticalSwitch.Get() == 1){
+      }
+    
+    while (horizontalSwitch.Get() == 1 && verticalSwitch.Get() == 0){
     //if horizontal switch senses cargo, but vertical switch does not sense cargo...
         return 2;
-
-    } else if (horizontalSwitch.Get() == 1 && verticalSwitch.Get() == 0){
+      }  
+    
+    while (horizontalSwitch.Get() == 0 && verticalSwitch.Get() == 1){
     //if horizontal switch does not sense cargo, but vertical switch does sense cargo...
         return 3;
-
-    } else if (horizontalSwitch.Get() == 1 && verticalSwitch.Get() == 1){
+     } 
+     
+     while (horizontalSwitch.Get() == 0 && verticalSwitch.Get() == 0){
     //if both horizontal and vertical switch do not sense cargo...
         return 4;
 
-    } else {
-        return  0;
-    }
+
+    } 
+
+}
+
+void Robot::microswitchIntake(){
+
+    
+    frc::SmartDashboard::PutNumber("GetPosition function", getPosition());
+    if (getPosition() == 1){
+       //if both switches sense cargo...
+    
+      hConveyor.Set(0);
+      intake.Set(0);
+      vConveyorLeft.Set(0);
+      vConveyorRight.Set(0);
+       //conveyor motors will not turn on because robot already possesses two cargo
+
+
+     } else if (getPosition() == 2){
+       //if horizontal switch senses cargo and vertical switch does not sense cargo...
+
+         if (verticalSwitch.Get() == 0){
+          vConveyorLeft.Set(1);
+          vConveyorRight.Set(-1);
+          hConveyor.Set(1);
+      } //vertical conveyor will turn on until cargo moves to vertical sensor position
+
+         if (horizontalSwitch.Get() == 0){
+          hConveyor.Set(1);
+          intake.Set(1);
+         } //horizontal conveyor will turn on until cargo moves to horizontal sensor position
+    
+     } else if (getPosition() == 3){
+       //if horizontal switch does not sense cargo and vertical switch senses cargo...
+
+         if (horizontalSwitch.Get() == 0){
+           hConveyor.Set(1);
+           intake.Set(1);
+        } //horizontal conveyor will turn on until cargo moves to horizontal sensor position
+
+        }  else if (getPosition() == 4){
+       //if both horizontal and vertical switch do not sense cargo 
+
+        if (verticalSwitch.Get() == 0){
+          vConveyorLeft.Set(1);
+          vConveyorRight.Set(-1);
+         } //vertical conveyor will turn on until cargo moves to vertical sensor position
+        
+        if (horizontalSwitch.Get() == 0){
+           hConveyor.Set(1);
+           intake.Set(1);
+         } //horizontal conveyor will turn on until cargo moves to horizontal sensor position
+
+     } else {
+        vConveyorLeft.Set(0);
+        vConveyorRight.Set(0);
+        hConveyor.Set(0);
+        intake.Set(0);
+
+     }
 }
