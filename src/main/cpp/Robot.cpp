@@ -118,23 +118,12 @@ void Robot::AutonomousInit() {
 void Robot::AutonomousPeriodic() {
   if (m_autoSelected == kAutoNameCustom) {
     // Custom Auto goes here
-<<<<<<< HEAD
-    //autoLimelightAlign();
-    //calculateRotateValue(-120, 0.25);
-    
-    if ((functionCompleted == 0) && (encoderDriveRunning == false)){
-       shoot();
-    }
-      
-=======
->>>>>>> a4cae61e166ea7da92420c9a8bdea5bd9a1e2902
     
     //frc::Wait(units::second_t(3));
 
     
 
     //ShootemQuickie();
-
 
 
 
@@ -165,86 +154,9 @@ void Robot::TeleopInit() {
 //1300 is adequate rpm for low scoring.
 
 void Robot::TeleopPeriodic() {
-<<<<<<< HEAD
-  // if(gamepad1.GetRawButtonPressed(2)) {
-  //   LimelightDistance();
-  // }
-  // if(gamepad2.GetRawButton(3)) {
-  //   intake.Set(ControlMode::PercentOutput, 1);
-  // }
-  // else {
-  //   intake.Set(ControlMode::PercentOutput, 0);
-  // }
- 
-  // if(gamepad1.GetRawButtonPressed(3)) {
-  //   motorVelocity += 100;
-  //   //frc::SmartDashboard::PutNumber("True rpm", motorVelocity);
-  // }
-  //limelight align
-  //ShootemQuickie();
-  
-  //Left motors
-  if(gamepad1.GetRawAxis(3) >= 0.1 && (gamepad1.GetRawAxis(1) >= 0.1 || gamepad1.GetRawAxis(1) <= -0.1)) {
-    leftFront.Set(gamepad1.GetRawAxis(1) * 0.5);
-  }
-  else if(gamepad1.GetRawAxis(1) >= 0.1 || gamepad1.GetRawAxis(1) <= -0.1 && !isActive) {
-    leftFront.Set(gamepad1.GetRawAxis(1));
-  }
-  else {
-    leftFront.Set(0);
-  }   
-  
-  //Right motors
-  if(gamepad1.GetRawAxis(3) >= 0.1 && (gamepad1.GetRawAxis(5) >= 0.1 || gamepad1.GetRawAxis(5) <= -0.1)) {
-    rightFront.Set(-gamepad1.GetRawAxis(5) * 0.5);
-  }
-  else if(gamepad1.GetRawAxis(5) >= 0.1 || gamepad1.GetRawAxis(5) <= -0.1 && !isActive) {
-    rightFront.Set(-gamepad1.GetRawAxis(5));
-  }
-  else {
-    rightFront.Set(0);
-  }
-
-  //intake
-  if(gamepad2.GetRawButton(1)) {
-    intake.Set(1);
-  }
-  else  {
-    intake.Set(0);
-  }
-
-  //shoot
-  if(gamepad2.GetRawButton(2)) {
-    ShootemQuickie();
-  }
-
-  //lower port 
-  if(gamepad2.GetRawButton(3)) {
-    lowerPortShot();
-  }
- 
-  // if(b && leftStickY >= 0.05) {
-  //   L1Motor.Set(-leftStickY * 0.5);
-  //   L2Motor.Set(-leftStickY * 0.5);
-  // }
-  // else if(y && leftStickY >= 0.05) {
-  //   L1Motor.Set(-leftStickY);
-  //   L2Motor.Set(-leftStickY);
-  // }
-
-  // if(rightStickY >= 0.05) {
-  //   L1Motor.Set(-rightStickY);
-  //   L2Motor.Set(-rightStickY);
-  // }
-  
-  //actual teleop
-    //Drive + slow mode
-
-=======
   troyAndMichaelController();
   //joshController();
   //kentController();
->>>>>>> a4cae61e166ea7da92420c9a8bdea5bd9a1e2902
 }
 
 void Robot::DisabledInit() {}

@@ -67,26 +67,12 @@ class Robot : public frc::TimedRobot {
   void flywheel(double speed, double rotations, double timeoutSeconds);
   void turnDrive(double speed, double degrees, double timeoutSeconds);
 
-<<<<<<< HEAD
-  void calculateRotateValue(double distance, double speed);
-  void microswitchIntake();
-
-  int getPosition();
-
- 
-=======
   void drive(double distance, double speed);
 
   int getPosition();
 
- //CIMs  
-  TalonSRX C2Motor{11};
-
   TalonSRX hConveyor{18};
-  TalonSRX intake{21};
-  TalonSRX vConveyorLeft{20};
-  TalonSRX vConveyorRight{19};
->>>>>>> a4cae61e166ea7da92420c9a8bdea5bd9a1e2902
+  
   //pidcontroller  
   rev::SparkMaxPIDController flywheelPID = flywheelShooter1.GetPIDController();
   rev::SparkMaxPIDController rightDrive = rightFront.GetPIDController();
@@ -107,7 +93,6 @@ class Robot : public frc::TimedRobot {
   rev::CANSparkMax rightBack {11, rev::CANSparkMax::MotorType::kBrushless};
   rev::CANSparkMax leftFront {12, rev::CANSparkMax::MotorType::kBrushless};
   rev::CANSparkMax leftBack {13, rev::CANSparkMax::MotorType::kBrushless}; 
-  rev::CANSparkMax hConveyor {18, rev::CANSparkMax::MotorType::kBrushless}; 
   rev::CANSparkMax vConveyorLeft {20, rev::CANSparkMax::MotorType::kBrushless}; 
   rev::CANSparkMax vConveyorRight {19, rev::CANSparkMax::MotorType::kBrushless}; 
   rev::CANSparkMax intake {21, rev::CANSparkMax::MotorType::kBrushless}; 
@@ -147,19 +132,14 @@ class Robot : public frc::TimedRobot {
   
   //score cargo method
 
-  //frc::Timer *pTimer = new frc::Timer();
+  frc::Timer *pTimer = new frc::Timer();
   
-<<<<<<< HEAD
-  //timer
-  
-=======
 
   units::time::second_t previousTime; 
   units::time::second_t alignPreviousTime;
   units::time::second_t elapsedTime;
   units::time::second_t alignElapsedTime;
   units::time::second_t startTime;
->>>>>>> a4cae61e166ea7da92420c9a8bdea5bd9a1e2902
 
   double gyroAngle; 
   double& error = gyroAngle;
