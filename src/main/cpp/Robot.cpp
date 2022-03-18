@@ -83,10 +83,7 @@ void Robot::AutonomousInit() {
   if (m_autoSelected == kAutoNameCustom) {
     // Custom Auto goes here
     // 
-    distance = frc::SmartDashboard::GetNumber("Distance In Inches", 12);
-    leftEncoder.SetPosition(0);
-    rightEncoder.SetPosition(0);
-    gyro.Reset();
+    
 
     functionCompleted = 0;
     encoderDriveRunning = false;
@@ -96,12 +93,32 @@ void Robot::AutonomousInit() {
 
   } else {
     // Default Auto goes here
+     leftEncoder.SetPosition(0);
+    rightEncoder.SetPosition(0);
+    gyro.Reset();
+
+    functionCompleted = 0;
+    encoderDriveRunning = true;
+    
+    alignmentComplete = false;
+
+    aTimer = new frc::Timer();
+    sTimer = new frc::Timer();
+    
+    aTimer->Start();
+    sTimer->Start();
+
+    alignElapsedTime = units::second_t(0);  
+    elapsedTime = units::second_t(0);
+    alignPreviousTime = units::second_t(0);
+    previousTime = units::second_t(0);
   }
 }
 
 void Robot::AutonomousPeriodic() {
   if (m_autoSelected == kAutoNameCustom) {
     // Custom Auto goes here
+<<<<<<< HEAD
     //autoLimelightAlign();
     //calculateRotateValue(-120, 0.25);
     
@@ -109,6 +126,8 @@ void Robot::AutonomousPeriodic() {
        shoot();
     }
       
+=======
+>>>>>>> a4cae61e166ea7da92420c9a8bdea5bd9a1e2902
     
     //frc::Wait(units::second_t(3));
 
@@ -124,7 +143,17 @@ void Robot::AutonomousPeriodic() {
     frc::SmartDashboard::PutNumber("Left Encoder Status", leftEncoder.GetPosition());
   } else {
     // Default Auto goes here
-    
+    if(encoderDriveRunning) {
+      drive(-100, -0.5);
+    }
+
+    if ((functionCompleted == 0) && (encoderDriveRunning == false) && (!alignmentComplete)){   
+      autoLimelightAlign();
+      
+    }
+    if ((functionCompleted == 0) && (encoderDriveRunning == false) && (alignmentComplete)) {
+      shoot();
+    }
   }
 }
 
@@ -136,6 +165,7 @@ void Robot::TeleopInit() {
 //1300 is adequate rpm for low scoring.
 
 void Robot::TeleopPeriodic() {
+<<<<<<< HEAD
   // if(gamepad1.GetRawButtonPressed(2)) {
   //   LimelightDistance();
   // }
@@ -210,6 +240,11 @@ void Robot::TeleopPeriodic() {
   //actual teleop
     //Drive + slow mode
 
+=======
+  troyAndMichaelController();
+  //joshController();
+  //kentController();
+>>>>>>> a4cae61e166ea7da92420c9a8bdea5bd9a1e2902
 }
 
 void Robot::DisabledInit() {}
