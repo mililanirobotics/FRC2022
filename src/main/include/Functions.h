@@ -243,8 +243,8 @@ void Robot::ScoringCargo(){
     //if the Y button to score 1 cargo is pressed...assumes one cargo is already stored in vertical conveyor 
     flywheelShooter1.Set(trueVelocity);
     frc::Wait(units::second_t(1));
-    vConveyorLeft.Set(ControlMode::PercentOutput, 1);
-    vConveyorRight.Set(ControlMode::PercentOutput, 1);   
+    vConveyorLeft.Set(1);
+    vConveyorRight.Set(1);   
     frc::Wait(units::second_t(3));
     //turns on flywheel shooter and vertical conveyor then waits for the robot to score a cargo...
     flywheelShooter1.Set(trueVelocity * 0.75);
@@ -257,18 +257,18 @@ void Robot::ScoringCargo(){
     frc::Wait(units::second_t(0.1));
     flywheelShooter1.Set(0);
 
-    vConveyorLeft.Set(ControlMode::PercentOutput, 0);
-    vConveyorRight.Set(ControlMode::PercentOutput, 0); 
-    hConveyor.Set(ControlMode::PercentOutput, 0);
+    vConveyorLeft.Set(0);
+    vConveyorRight.Set(0); 
+    hConveyor.Set(0);
     //flywheel shooter and vertical conveyor are turned off 
   } 
   else if(gamepad2.GetRawButtonPressed(1)){
     //if the A button to score 2 cargo is pressed...assumes both cargo are already stored in conveyor
     flywheelShooter1.Set(trueVelocity);
     frc::Wait(units::second_t(1));
-    vConveyorLeft.Set(ControlMode::PercentOutput, 1);
-    vConveyorRight.Set(ControlMode::PercentOutput, 1);
-    hConveyor.Set(ControlMode::PercentOutput, 1);
+    vConveyorLeft.Set(1);
+    vConveyorRight.Set(1);
+    hConveyor.Set(1);
     frc::Wait(units::second_t(3));
 
     //turns on flyhweel shooter, vertical conveyor, and horizontal conveyor then waits for the robot to score both cargo
@@ -282,9 +282,9 @@ void Robot::ScoringCargo(){
     frc::Wait(units::second_t(0.1));
 
     flywheelShooter1.Set(0);
-    vConveyorLeft.Set(ControlMode::PercentOutput, 0);
-    vConveyorRight.Set(ControlMode::PercentOutput, 0);
-    hConveyor.Set(ControlMode::PercentOutput, 0);
+    vConveyorLeft.Set(0);
+    vConveyorRight.Set(0);
+    hConveyor.Set(0);
   }
 }
 
@@ -301,21 +301,21 @@ void Robot::ShootemQuickie() {
     //NOTE: Setting target velocity = setting target RPM
     isActive = true;
 
-    hConveyor.Set(ControlMode::PercentOutput, 1);
+    hConveyor.Set(1);
     DistanceToRPM(LimelightDistance());
     
     flywheelPID.SetReference(-motorVelocity, rev::ControlType::kVelocity);
     frc::Wait(units::second_t(1.5));
 
-    vConveyorLeft.Set(ControlMode::PercentOutput, 1);
-    vConveyorRight.Set(ControlMode::PercentOutput,-1);
+    vConveyorLeft.Set(1);
+    vConveyorRight.Set(-1);
     
     frc::Wait(units::second_t(3.5));
     
-    intake.Set(ControlMode::PercentOutput, 0);
-    hConveyor.Set(ControlMode::PercentOutput, 0);
-    vConveyorLeft.Set(ControlMode::PercentOutput, 0);
-    vConveyorRight.Set(ControlMode::PercentOutput, 0);
+    intake.Set(0);
+    hConveyor.Set(0);
+    vConveyorLeft.Set(0);
+    vConveyorRight.Set(0);
 
     // flywheelPID.SetReference(-trueVelocity/2, rev::ControlType::kVelocity);
     // frc::Wait(units::second_t(1));
@@ -342,20 +342,20 @@ void Robot::lowerPortShot() {
     //NOTE: Setting target velocity = setting target RPM
     isActive = true;
 
-    hConveyor.Set(ControlMode::PercentOutput, 1);
+    hConveyor.Set(1);
     //DistanceToRPM(LimelightDistance());
     flywheelPID.SetReference(-1300, rev::ControlType::kVelocity);
     frc::Wait(units::second_t(1));
 
-    vConveyorLeft.Set(ControlMode::PercentOutput, 1);
-    vConveyorRight.Set(ControlMode::PercentOutput,-1);
+    vConveyorLeft.Set(1);
+    vConveyorRight.Set(-1);
     
     frc::Wait(units::second_t(4));
     
-    intake.Set(ControlMode::PercentOutput, 0);
-    hConveyor.Set(ControlMode::PercentOutput, 0);
-    vConveyorLeft.Set(ControlMode::PercentOutput, 0);
-    vConveyorRight.Set(ControlMode::PercentOutput, 0);
+    intake.Set(0);
+    hConveyor.Set(0);
+    vConveyorLeft.Set(0);
+    vConveyorRight.Set(0);
 
     flywheelPID.SetReference(0, rev::ControlType::kVelocity);
     
@@ -404,10 +404,10 @@ void Robot::microswitchIntake(){
     if (getPosition() == 1){
        //if both switches sense cargo...
     
-      hConveyor.Set(ControlMode::PercentOutput, 0);
-      intake.Set(ControlMode::PercentOutput,0);
-      vConveyorLeft.Set(ControlMode::PercentOutput, 0);
-      vConveyorRight.Set(ControlMode::PercentOutput, 0);
+      hConveyor.Set(0);
+      intake.Set(0);
+      vConveyorLeft.Set(0);
+      vConveyorRight.Set(0);
        //conveyor motors will not turn on because robot already possesses two cargo
 
 
@@ -415,42 +415,42 @@ void Robot::microswitchIntake(){
        //if horizontal switch senses cargo and vertical switch does not sense cargo...
 
          if (verticalSwitch.Get() == 0){
-          vConveyorLeft.Set(ControlMode::PercentOutput, 1);
-          vConveyorRight.Set(ControlMode::PercentOutput, -1);
-          hConveyor.Set(ControlMode::PercentOutput, 1);
+          vConveyorLeft.Set(1);
+          vConveyorRight.Set(-1);
+          hConveyor.Set(1);
       } //vertical conveyor will turn on until cargo moves to vertical sensor position
 
          if (horizontalSwitch.Get() == 0){
-          hConveyor.Set(ControlMode::PercentOutput, 1);
-          intake.Set(ControlMode::PercentOutput,1);
+          hConveyor.Set(1);
+          intake.Set(1);
          } //horizontal conveyor will turn on until cargo moves to horizontal sensor position
     
      } else if (getPosition() == 3){
        //if horizontal switch does not sense cargo and vertical switch senses cargo...
 
          if (horizontalSwitch.Get() == 0){
-           hConveyor.Set(ControlMode::PercentOutput, 1);
-           intake.Set(ControlMode::PercentOutput,1);
+           hConveyor.Set(1);
+           intake.Set(1);
         } //horizontal conveyor will turn on until cargo moves to horizontal sensor position
 
         }  else if (getPosition() == 4){
        //if both horizontal and vertical switch do not sense cargo 
 
         if (verticalSwitch.Get() == 0){
-          vConveyorLeft.Set(ControlMode::PercentOutput, 1);
-          vConveyorRight.Set(ControlMode::PercentOutput, -1);
+          vConveyorLeft.Set(1);
+          vConveyorRight.Set(-1);
          } //vertical conveyor will turn on until cargo moves to vertical sensor position
         
         if (horizontalSwitch.Get() == 0){
-           hConveyor.Set(ControlMode::PercentOutput, 1);
-           intake.Set(ControlMode::PercentOutput,1);
+           hConveyor.Set(1);
+           intake.Set(1);
          } //horizontal conveyor will turn on until cargo moves to horizontal sensor position
 
      } else {
-        vConveyorLeft.Set(ControlMode::PercentOutput, 0);
-        vConveyorRight.Set(ControlMode::PercentOutput, 0);
-        hConveyor.Set(ControlMode::PercentOutput, 0);
-        intake.Set(ControlMode:: PercentOutput, 0);
+        vConveyorLeft.Set(0);
+        vConveyorRight.Set(0);
+        hConveyor.Set(0);
+        intake.Set(0);
 
      }
 
@@ -487,25 +487,25 @@ void::Robot::kentController(){
 
   //when right bumper is pressed, turn on intake and horizontal conveyor
   if(gamepad2.GetRawButtonPressed(6)){
-    intake.Set(ControlMode::PercentOutput, 1);
-    hConveyor.Set(ControlMode::PercentOutput, 1);
+    intake.Set(1);
+    hConveyor.Set(1);
   } //when left bumper is pressed, reverse intake and horizontal conveyor
   else if(gamepad2.GetRawButtonPressed(5)){ 
-    intake.Set(ControlMode::PercentOutput, -1);
-    hConveyor.Set(ControlMode::PercentOutput, -1);
+    intake.Set(-1);
+    hConveyor.Set(-1);
   } //turn off intake and horizontal conveyor otherwise
   else {
-    intake.Set(ControlMode::PercentOutput, 0);
-    hConveyor.Set(ControlMode::PercentOutput, 0);
+    intake.Set(0);
+    hConveyor.Set(0);
   }
 
   //when button b is pressed, vertical conveyor turns on 
   if(gamepad2.GetRawButtonPressed(2)){
-    vConveyorLeft.Set(ControlMode::PercentOutput, 1);
-    vConveyorRight.Set(ControlMode::PercentOutput, 1);
+    vConveyorLeft.Set(1);
+    vConveyorRight.Set(1);
   } else {
-    vConveyorLeft.Set(ControlMode::PercentOutput, 0);
-    vConveyorRight.Set(ControlMode::PercentOutput, 0);
+    vConveyorLeft.Set(0);
+    vConveyorRight.Set(0);
   }
 
  
@@ -527,27 +527,27 @@ void Robot::joshController() {
  
   //if left trigger is pressed, intake and horizontal conveyor turns on 
     if (gamepad2.GetRawAxis(2) >=0;05) {
-      intake.Set(ControlMode::PercentOutput, 1);
-      hConveyor.Set(ControlMode::PercentOutput, 1);
+      intake.Set(1);
+      hConveyor.Set(1);
     } //if right trigger is pressed, intake and horizontal conveyor will reverse
     else if (gamepad2.GetRawAxis(3) >=0;05){
-      intake.Set(ControlMode::PercentOutput, -1);
-      hConveyor.Set(ControlMode::PercentOutput, -1);
+      intake.Set(-1);
+      hConveyor.Set(-1);
     }
     else {
-      intake.Set(ControlMode::PercentOutput, 0);
-      hConveyor.Set(ControlMode::PercentOutput, 0);
+      intake.Set(0);
+      hConveyor.Set(0);
     }
     
     int dpadDirection = gamepad2.GetPOV(0);
 
   //if dpad up is pressed, vertical conveyor turns on 
   if(dpadDirection == 0){
-    vConveyorLeft.Set(ControlMode::PercentOutput, 1);
-    vConveyorRight.Set(ControlMode::PercentOutput, 1);
+    vConveyorLeft.Set(1);
+    vConveyorRight.Set(1);
   } else {
-    vConveyorLeft.Set(ControlMode::PercentOutput, 0);
-    vConveyorRight.Set(ControlMode::PercentOutput, 0);
+    vConveyorLeft.Set(0);
+    vConveyorRight.Set(0);
   }
 
   //if right bumper is pressed, solenoid turns on (out)
