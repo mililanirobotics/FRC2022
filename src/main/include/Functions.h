@@ -302,7 +302,7 @@ void Robot::shoot(){
     intake.Set(0);
     vConveyorLeft.Set(0);
     vConveyorRight.Set(0);
-    hConveyor.Set(ControlMode::PercentOutput, 0);
+    hConveyor.Set(0);
 
     flywheelPID.SetReference(0, rev::ControlType::kVelocity);
 
@@ -313,7 +313,7 @@ void Robot::shoot(){
     intake.Set(1);
     vConveyorLeft.Set(1);
     vConveyorRight.Set(-1);
-    hConveyor.Set(ControlMode::PercentOutput, 1);
+    hConveyor.Set(1);
   }
   
   previousTime = time; 
@@ -413,7 +413,7 @@ void Robot::ShootemQuickie() {
     
     //NOTE: Setting target velocity = setting target RPM
     isActive = true;
-    hConveyor.Set(ControlMode::PercentOutput, 1);
+    hConveyor.Set(1);
     //DistanceToRPM(LimelightDistance());
     trueVelocity = motorVelocity * 2.123;
     flywheelPID.SetReference(-trueVelocity, rev::ControlType::kVelocity);
@@ -425,7 +425,7 @@ void Robot::ShootemQuickie() {
     frc::Wait(units::second_t(4));
     
     intake.Set(0);
-    hConveyor.Set(ControlMode::PercentOutput, 0);
+    hConveyor.Set(0);
     vConveyorLeft.Set(0);
     vConveyorRight.Set(0);
 
@@ -451,7 +451,7 @@ void Robot::lowerPortShot() {
     //NOTE: Setting target velocity = setting target RPM
     isActive = true;
 
-    hConveyor.Set(ControlMode::PercentOutput, 1);
+    hConveyor.Set(1);
     //DistanceToRPM(LimelightDistance());
     flywheelPID.SetReference(-1300, rev::ControlType::kVelocity);
     frc::Wait(units::second_t(1));
@@ -462,7 +462,7 @@ void Robot::lowerPortShot() {
     frc::Wait(units::second_t(4));
     
     intake.Set(0);
-    hConveyor.Set(ControlMode::PercentOutput, 0);
+    hConveyor.Set(0);
     vConveyorLeft.Set(0);
     vConveyorRight.Set(0);
 
@@ -538,15 +538,15 @@ void::Robot::kentController(){
   //when right bumper is pressed, turn on intake and horizontal conveyor
   if(gamepad2.GetRawButtonPressed(6)){
     intake.Set(1);
-    hConveyor.Set(ControlMode::PercentOutput, 1);
+    hConveyor.Set(1);
   } //when left bumper is pressed, reverse intake and horizontal conveyor
   else if(gamepad2.GetRawButtonPressed(5)){ 
     intake.Set(-1);
-    hConveyor.Set(ControlMode::PercentOutput, -1);
+    hConveyor.Set(-1);
   } //turn off intake and horizontal conveyor otherwise
   else {
     intake.Set(0);
-    hConveyor.Set(ControlMode::PercentOutput, 0);
+    hConveyor.Set(0);
   }
 
   //when button b is pressed, vertical conveyor turns on 
@@ -578,15 +578,15 @@ void Robot::joshController() {
   //if left trigger is pressed, intake and horizontal conveyor turns on 
     if (gamepad2.GetRawAxis(2) >=0;05) {
       intake.Set(1);
-      hConveyor.Set(ControlMode::PercentOutput, 1);
+      hConveyor.Set(1);
     } //if right trigger is pressed, intake and horizontal conveyor will reverse
     else if (gamepad2.GetRawAxis(3) >=0;05){
       intake.Set(-1);
-      hConveyor.Set(ControlMode::PercentOutput, -1);
+      hConveyor.Set(-1);
     }
     else {
       intake.Set(0);
-      hConveyor.Set(ControlMode::PercentOutput, 0);
+      hConveyor.Set(0);
     }
     
     int dpadDirection = gamepad2.GetPOV(0);

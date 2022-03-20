@@ -70,8 +70,6 @@ class Robot : public frc::TimedRobot {
   void drive(double distance, double speed);
 
   int getPosition();
-
-  TalonSRX hConveyor{18};
   
   //pidcontroller  
   rev::SparkMaxPIDController flywheelPID = flywheelShooter1.GetPIDController();
@@ -96,6 +94,8 @@ class Robot : public frc::TimedRobot {
   rev::CANSparkMax vConveyorLeft {20, rev::CANSparkMax::MotorType::kBrushless}; 
   rev::CANSparkMax vConveyorRight {19, rev::CANSparkMax::MotorType::kBrushless}; 
   rev::CANSparkMax intake {21, rev::CANSparkMax::MotorType::kBrushless}; 
+  rev::CANSparkMax hConveyor {18, rev::CANSparkMax::MotorType::kBrushless}; 
+
 
   rev::CANSparkMax flywheelShooter1 {16, rev::CANSparkMax::MotorType::kBrushless};  
   //follows flywheelShooter1
