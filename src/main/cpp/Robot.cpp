@@ -159,7 +159,10 @@ void Robot::TeleopPeriodic() {
   //kentController();
 }
 
-void Robot::DisabledInit() {}
+void Robot::DisabledInit() {
+  rightSolenoid.Set(frc::DoubleSolenoid::kOff);
+  leftSolenoid.Set(frc::DoubleSolenoid::kOff);
+}
 
 void Robot::DisabledPeriodic() {}
 

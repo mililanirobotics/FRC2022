@@ -507,32 +507,79 @@ int Robot::getPosition() {
     } 
 }
 
+void Robot::microswitchIntake(){
+    frc::SmartDashboard::PutNumber("GetPosition function", getPosition());
+    if (getPosition() == 1){
+       //if both switches sense cargo...
+      hConveyor.Set(0);
+      intake.Set(0);
+      vConveyorLeft.Set(0);
+      vConveyorRight.Set(0);
+       //conveyor motors will not turn on because robot already possesses two cargo
+    } 
+    else if (getPosition() == 2){
+      //if horizontal switch senses cargo and vertical switch does not sense cargo...
+      if (verticalSwitch.Get() == 0){
+        vConveyorLeft.Set(1);
+        vConveyorRight.Set(-1);
+        hConveyor.Set(1);
+    } //vertical conveyor will turn on until cargo moves to vertical sensor position
+        if (horizontalSwitch.Get() == 0){
+          hConveyor.Set(1);
+          intake.Set(1);
+        } //horizontal conveyor will turn on until cargo moves to horizontal sensor position
+    }
+    else if (getPosition() == 3){
+      //if horizontal switch does not sense cargo and vertical switch senses cargo...
+      if (horizontalSwitch.Get() == 0){
+        hConveyor.Set(1);
+        intake.Set(1);
+      } //horizontal conveyor will turn on until cargo moves to horizontal sensor position
+    } 
+    else if (getPosition() == 4){
+      //if both horizontal and vertical switch do not sense cargo 
+      if (verticalSwitch.Get() == 0){
+        vConveyorLeft.Set(1);
+        vConveyorRight.Set(-1);
+      } //vertical conveyor will turn on until cargo moves to vertical sensor position
+      if (horizontalSwitch.Get() == 0){
+        hConveyor.Set(1);
+        intake.Set(1);
+      } //horizontal conveyor will turn on until cargo moves to horizontal sensor position
+    } 
+    else {
+      vConveyorLeft.Set(0);
+      vConveyorRight.Set(0);
+      hConveyor.Set(0);
+      intake.Set(0);
+     }
+}
+
 void::Robot::troyAndMichaelController(){
-   //left motors
-    if(Attack31.GetRawButtonPressed(1) && (Attack31.GetRawAxis(1) >= 0.1 || Attack31.GetRawAxis(1) <= -0.1)) {
-        leftFront.Set(Attack31.GetRawAxis(1) * 0.5);
-    }
-    else if(Attack31.GetRawAxis(1) >= 0.1 || Attack31.GetRawAxis(1) <= -0.1) {
-        leftFront.Set(Attack31.GetRawAxis(1));
-    }
-    else {
-        leftFront.Set(0);
-    }   
+  //left motors
+  if(Attack31.GetRawButtonPressed(1) && (Attack31.GetRawAxis(1) >= 0.1 || Attack31.GetRawAxis(1) <= -0.1)) {
+    leftFront.Set(Attack31.GetRawAxis(1) * 0.5);
+  }
+  else if(Attack31.GetRawAxis(1) >= 0.1 || Attack31.GetRawAxis(1) <= -0.1) {
+    leftFront.Set(Attack31.GetRawAxis(1));
+  }
+  else {
+    leftFront.Set(0);
+  }   
   
-    //Right motors
-    if(Attack32.GetRawButtonPressed(1) && (Attack32.GetRawAxis(1) >= 0.1 || Attack32.GetRawAxis(1) <= -0.1)) {
-        rightFront.Set(-Attack32.GetRawAxis(1) * 0.5);
-    }
-    else if(Attack32.GetRawAxis(1) >= 0.1 || Attack32.GetRawAxis(1) <= -0.1) {
-        rightFront.Set(-Attack32.GetRawAxis(1));
-    }
-    else {
-        rightFront.Set(0);
-    }   
+  //Right motors
+  if(Attack32.GetRawButtonPressed(1) && (Attack32.GetRawAxis(1) >= 0.1 || Attack32.GetRawAxis(1) <= -0.1)) {
+    rightFront.Set(-Attack32.GetRawAxis(1) * 0.5);
+  }
+  else if(Attack32.GetRawAxis(1) >= 0.1 || Attack32.GetRawAxis(1) <= -0.1) {
+    rightFront.Set(-Attack32.GetRawAxis(1));
+  }
+  else {
+    rightFront.Set(0);
+  }   
 }
 
 //Kent Prefrence
-
 void::Robot::kentController(){
 
   //when right bumper is pressed, turn on intake and horizontal conveyor
@@ -562,12 +609,12 @@ void::Robot::kentController(){
   int dpadDirection = gamepad2.GetPOV(0);
   //if dpad up is pressed, solenoid turns on (out)
   if(dpadDirection == 0){
-    //rightSolenoid.Toggle();
-    //leftSolenoid.Toggle();
+    rightSolenoid.Set(frc::DoubleSolenoid::kReverse);
+    leftSolenoid.Set(frc::DoubleSolenoid::kReverse);
   } //if dpad down is pressed, solenoid turns off (in)
-  else if (dpadDirection ==180){
-    //rightSolenoid.Set(frc::DoubleSolenoid::Value::kOff);
-    //leftSolenoid.Set(frc::DoubleSolenoid::Value::kOff);
+  else if (dpadDirection == 180){
+    rightSolenoid.Toggle();
+    leftSolenoid.Toggle();
   }
   //scores either one or two cargo, change based on whichever buttons available 
   ScoringCargo();
@@ -576,38 +623,43 @@ void::Robot::kentController(){
 void Robot::joshController() {
  
   //if left trigger is pressed, intake and horizontal conveyor turns on 
-    if (gamepad2.GetRawAxis(2) >=0;05) {
-      intake.Set(1);
-      hConveyor.Set(1);
-    } //if right trigger is pressed, intake and horizontal conveyor will reverse
-    else if (gamepad2.GetRawAxis(3) >=0;05){
-      intake.Set(-1);
-      hConveyor.Set(-1);
-    }
-    else {
-      intake.Set(0);
-      hConveyor.Set(0);
-    }
+  if (gamepad2.GetRawAxis(2) >=0;05) {
+    intake.Set(1);
+    hConveyor.Set(1);
+  } //if right trigger is pressed, intake and horizontal conveyor will reverse
+  else if (gamepad2.GetRawAxis(3) >=0;05){
+    intake.Set(-1);
+    hConveyor.Set(-1);
+  }
+  else {
+    intake.Set(0);
+    hConveyor.Set(0);
+  }
     
-    int dpadDirection = gamepad2.GetPOV(0);
+  int dpadDirection = gamepad2.GetPOV(0);
 
   //if dpad up is pressed, vertical conveyor turns on 
   if(dpadDirection == 0){
     vConveyorLeft.Set(1);
     vConveyorRight.Set(1);
-  } else {
+  } 
+  else {
     vConveyorLeft.Set(0);
     vConveyorRight.Set(0);
   }
 
-  //if right bumper is pressed, solenoid turns on (out)
+  // If right bumper is pressed,
+  // solenoid sets forward output to false and reverse output to true. 
+  // This results in piston extension.
   if (gamepad2.GetRawButtonPressed(6)){
-    //rightSolenoid.Toggle();
-    //leftSolenoid.Toggle();
-  } //if left bumper is pressed, solenoid turns off (in)
+    
+    rightSolenoid.Set(frc::DoubleSolenoid::kReverse);
+    leftSolenoid.Set(frc::DoubleSolenoid::kReverse);
+  } 
   else if (gamepad2.GetRawButtonPressed(5)){
-    //rightSolenoid.Set(frc::DoubleSolenoid::Value::kOff);
-    //leftSolenoid.Set(frc::DoubleSolenoid::Value::kOff);
+    //Toggle
+    rightSolenoid.Toggle();
+    leftSolenoid.Toggle();
   }
   //if x button is pressed, robot will socre cargo in low goal
   if (gamepad2.GetRawButtonPressed(3)){
@@ -620,3 +672,4 @@ void Robot::joshController() {
     limelightAlign();
   }
 }
+
