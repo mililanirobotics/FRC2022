@@ -146,7 +146,6 @@ class Robot : public frc::TimedRobot {
   double targetDistance; 
   double fractionOfTargetDistance;
   double averageActualDistance;
-  double speedChange; 
   double gyroAngle; 
 
   //angle to distance function variables:

@@ -99,20 +99,19 @@ double Robot::GetMedian(double value1, double value2, double value3) {
 //input a negative speed to go backwards, positive to go forward
 void Robot::drive(double distance, double speed) {
   gyroAngle = gyro.GetAngle();
-  //Gets angle from gyro sensor 
+
+  //Converts distance in inches to counts for drive motors
   targetDistance = distance * countsPerInch;
-  //Converts distance in inches to counts for motor 
+
   averageActualDistance = (-(leftEncoder.GetPosition()) + rightEncoder.GetPosition())/2;
-  //Averages the two encoder positions to get the average distance traveled
-  speedChange = averageActualDistance/targetDistance;
-  //Figures out how much the robot speed needs to change to correct error
+
+  //Determines distance where the robot will slow down 
   fractionOfTargetDistance = targetDistance * (1.0/3); 
-  //After a certain distance to the target distance, the robot will start to slow down before stopping
 
+  //Variable to adjust robot speed based on drift
   speedFactor = error * 0.1; 
-  //Adjusts robot speed based on error from drifting 
 
-  //Adjusts left and right motor speeds to account for drift measured by encoders
+  //Adjusts left and right motor speeds to account for drift measured by the gyro sensor
   if (abs(leftEncoder.GetPosition()) < abs(targetDistance) && abs(rightEncoder.GetPosition()) < abs(targetDistance)){
     if(error > 1){
       rightFront.Set(speed + (speed * speedFactor));
@@ -125,7 +124,7 @@ void Robot::drive(double distance, double speed) {
       leftFront.Set(-speed);   
     } 
 
-    //slows down robot when at a fraction of target distance 
+    //slows robot down when it reaches a fraction of target distance 
     if (abs(leftEncoder.GetPosition()) >= abs(fractionOfTargetDistance) && abs(rightEncoder.GetPosition()) >= abs(fractionOfTargetDistance)) {
       speed /= 8;      
     } //corrects error when drifting
@@ -143,6 +142,7 @@ void Robot::drive(double distance, double speed) {
       rightFront.Set(-speed);
       leftFront.Set(speed); 
     }
+
     if (abs(leftEncoder.GetPosition()) <= abs(fractionOfTargetDistance) && abs(rightEncoder.GetPosition()) <= abs(fractionOfTargetDistance)) {
       speed /= 2;     
     }
@@ -377,37 +377,60 @@ void Robot::turnDrive(double speed, double degrees, double timeoutSeconds) {
 }
 
 void Robot::ScoringCargo(){
+  //assumes one cargo is already stored in vertical conveyor 
   if (gamepad2.GetRawButtonPressed(4)){
-    //if the Y button to score 1 cargo is pressed...assumes one cargo is already stored in vertical conveyor 
-    flywheelShooter1.Set(1);
-    //possibly add a wait command as flywheel rpm increases to shooting speed?
-    //vConveyorLeft.Set(1);
-    frc::Wait(units::second_t(3));
+    trueVelocity = -1; 
     //turns on flywheel shooter and vertical conveyor then waits for the robot to score a cargo...
-    flywheelShooter1.Set(0);
-    //vConveyorLeft.Set(0);
-    //flywheel shooter and vertical conveyor are turned off 
-  }
-  if (gamepad2.GetRawButtonPressed(1)){
-    //if the A button to score 2 cargo is pressed...assumes both cargo are already stored in conveyor
-    flywheelShooter1.Set(1);
-    //possibly add a wait command as flywheel rpm increases to shooting speed
-    //vConveyorLeft.Set(1);
-    ////conveyorHorizontal.Set(1);
+    flywheelPID.SetReference(trueVelocity, rev::ControlType::kVelocity);
+    frc::Wait(units::second_t(1));
+    vConveyorLeft.Set(1);
+    vConveyorRight.Set(1);   
     frc::Wait(units::second_t(3));
+    //slows down flywheel shooter slowly
+    flywheelPID.SetReference(trueVelocity * 0.75, rev::ControlType::kVelocity);
+    frc::Wait(units::second_t(0.1));
+    flywheelPID.SetReference(trueVelocity * 0.5, rev::ControlType::kVelocity);
+    frc::Wait(units::second_t(0.1));
+    flywheelPID.SetReference(trueVelocity * 0.25, rev::ControlType::kVelocity);
+    frc::Wait(units::second_t(0.1));
+    flywheelPID.SetReference(trueVelocity * 0.1, rev::ControlType::kVelocity);
+    frc::Wait(units::second_t(0.1));
+    flywheelPID.SetReference(0, rev::ControlType::kVelocity);
+    //flywheel shooter and vertical conveyor are turned off 
+    vConveyorLeft.Set(0);
+    vConveyorRight.Set(0); 
+  } //assumes both cargo are already stored in conveyor
+  else if(gamepad2.GetRawButtonPressed(1)){
     //turns on flyhweel shooter, vertical conveyor, and horizontal conveyor then waits for the robot to score both cargo
-    flywheelShooter1.Set(0);
-    //vConveyorLeft.Set(0);
-    //flywheel shooter, vertical conveyor, and horizontal conveyor are all turned off
+    flywheelPID.SetReference(trueVelocity, rev::ControlType::kVelocity);
+    frc::Wait(units::second_t(1));
+    vConveyorLeft.Set(1);
+    vConveyorRight.Set(1);
+    hConveyor.Set(1);
+    frc::Wait(units::second_t(3));
+    //slows down flywheel shooter slowly
+    flywheelPID.SetReference(trueVelocity * 0.75, rev::ControlType::kVelocity);
+    frc::Wait(units::second_t(0.1));
+    flywheelPID.SetReference(trueVelocity * 0.5, rev::ControlType::kVelocity);
+    frc::Wait(units::second_t(0.1));
+    flywheelPID.SetReference(trueVelocity * 0.25, rev::ControlType::kVelocity);
+    frc::Wait(units::second_t(0.1));
+    flywheelPID.SetReference(trueVelocity * 0.1, rev::ControlType::kVelocity);
+    frc::Wait(units::second_t(0.1));
+    //flywheel shooter, vertical conveyor, and horizontal conveyor are turned off 
+    flywheelPID.SetReference(0, rev::ControlType::kVelocity);
+    vConveyorLeft.Set(0);
+    vConveyorRight.Set(0);
+    hConveyor.Set(0);
   }
 }
+
 
 void Robot::ShootemQuickie() {
   // bool x;
   //   if(gamepad1.GetRawButtonPressed(4)) {
   //   x = 1;
   // }
-    
     
     //Calculated gearing factor of ~1.846 or so
     
@@ -483,25 +506,25 @@ void Robot::DistanceToRPM (double distance) {
   motorVelocity = (int)(5.76*(distance*distance) + (5.39*distance) + 3670);
 }
 
-//returns a variable based on whether microswitches sense cargo 
+//returns varrying integers based on location of cargo for automated intake function in tele-op
 int Robot::getPosition() {
+    //if both switches sense cargo, return 1 
     while (horizontalSwitch.Get() == 1 && verticalSwitch.Get() == 1){
-        //if both switches sense cargo, return 1 
         return 1;
       }
     
-    while (horizontalSwitch.Get() == 1 && verticalSwitch.Get() == 0){
     //if horizontal switch senses cargo, but vertical switch does not sense cargo, return 2
+    while (horizontalSwitch.Get() == 1 && verticalSwitch.Get() == 0){
         return 2;
       }  
     
-    while (horizontalSwitch.Get() == 0 && verticalSwitch.Get() == 1){
     //if horizontal switch does not sense cargo, but vertical switch does sense cargo, return 3 
+    while (horizontalSwitch.Get() == 0 && verticalSwitch.Get() == 1){
         return 3;
      } 
      
-     while (horizontalSwitch.Get() == 0 && verticalSwitch.Get() == 0){
     //if both horizontal and vertical switch do not sense cargo, return 4 
+     while (horizontalSwitch.Get() == 0 && verticalSwitch.Get() == 0){
         return 4;
 
     } 
