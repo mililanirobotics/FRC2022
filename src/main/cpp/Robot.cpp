@@ -29,7 +29,7 @@ void Robot::RobotInit() {
   frc::SmartDashboard::PutData("Auto Modes", &m_chooser);
 
   //flywheel shooter 2 follors flywheel shooter 1
-  flywheelShooter2.Follow(flywheelShooter1);
+  flywheelShooter2.Follow(flywheelShooter1, true);
   //set PID
   flywheelPID.SetP(kP);
   flywheelPID.SetFF(kFF);

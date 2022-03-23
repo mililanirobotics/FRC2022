@@ -587,10 +587,10 @@ void Robot::microswitchIntake(){
 void::Robot::troyAndMichaelController(){
   //left motors
   if(Attack31.GetRawButtonPressed(1) && (Attack31.GetRawAxis(1) >= 0.1 || Attack31.GetRawAxis(1) <= -0.1)) {
-    leftFront.Set(Attack31.GetRawAxis(1) * 0.5);
+    leftFront.Set(-Attack31.GetRawAxis(1) * 0.5);
   }
   else if(Attack31.GetRawAxis(1) >= 0.1 || Attack31.GetRawAxis(1) <= -0.1) {
-    leftFront.Set(Attack31.GetRawAxis(1));
+    leftFront.Set(-Attack31.GetRawAxis(1));
   }
   else {
     leftFront.Set(0);
@@ -598,10 +598,10 @@ void::Robot::troyAndMichaelController(){
   
   //Right motors
   if(Attack32.GetRawButtonPressed(1) && (Attack32.GetRawAxis(1) >= 0.1 || Attack32.GetRawAxis(1) <= -0.1)) {
-    rightFront.Set(-Attack32.GetRawAxis(1) * 0.5);
+    rightFront.Set(Attack32.GetRawAxis(1) * 0.5);
   }
   else if(Attack32.GetRawAxis(1) >= 0.1 || Attack32.GetRawAxis(1) <= -0.1) {
-    rightFront.Set(-Attack32.GetRawAxis(1));
+    rightFront.Set(Attack32.GetRawAxis(1));
   }
   else {
     rightFront.Set(0);
