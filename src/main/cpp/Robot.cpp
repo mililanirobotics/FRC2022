@@ -28,16 +28,19 @@ void Robot::RobotInit() {
   m_chooser.AddOption(kAutoNameCustom, kAutoNameCustom);
   frc::SmartDashboard::PutData("Auto Modes", &m_chooser);
 
+  //flywheel shooter 2 follors flywheel shooter 1
   flywheelShooter2.Follow(flywheelShooter1);
+  //set PID
   flywheelPID.SetP(kP);
   flywheelPID.SetFF(kFF);
-
+  //left back motor follors left front motor, right back motor follows right front motor
   leftBack.Follow(leftFront);
   rightBack.Follow(rightFront);
 
   leftEncoder.SetPositionConversionFactor(42);
   rightEncoder.SetPositionConversionFactor(42);
 
+  //calibrate gyro 
   gyro.Calibrate();
 
   
@@ -88,12 +91,14 @@ void Robot::AutonomousInit() {
     functionCompleted = 0;
     encoderDriveRunning = false;
     hasRun = false;
-
+    //resets timer
     pTimer->Reset();
 
   } else {
     // Default Auto goes here
-     leftEncoder.SetPosition(0);
+
+    //resets encoders and gyro 
+    leftEncoder.SetPosition(0);
     rightEncoder.SetPosition(0);
     gyro.Reset();
 
@@ -102,6 +107,7 @@ void Robot::AutonomousInit() {
     
     alignmentComplete = false;
 
+    //resets timers
     aTimer = new frc::Timer();
     sTimer = new frc::Timer();
     
@@ -126,7 +132,7 @@ void Robot::AutonomousPeriodic() {
     //ShootemQuickie();
 
 
-
+    //Output gyro angle and encoder positions to Smart Dashboard 
     frc::SmartDashboard::PutNumber("Gyro Status", gyro.GetAngle());
     frc::SmartDashboard::PutNumber("Right Encoder Status", rightEncoder.GetPosition());
     frc::SmartDashboard::PutNumber("Left Encoder Status", leftEncoder.GetPosition());
@@ -147,7 +153,9 @@ void Robot::AutonomousPeriodic() {
 }
 
 void Robot::TeleopInit() {
+  //flywheel shooter 2 follows flywheel shooter 1 
   flywheelShooter2.Follow(flywheelShooter1);
+  //set motor velocity to 0 
   motorVelocity = 0;
 }
 

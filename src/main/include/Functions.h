@@ -36,6 +36,7 @@ using namespace std;
 frc::Timer *sTimer;
 frc::Timer *aTimer;
 
+//Finds distance of robot to reflective tape on hub using limelight
 double Robot::LimelightDistance() {
     auto inst = nt::NetworkTableInstance::GetDefault();
     auto limelight = inst.GetTable("limelight");
@@ -150,6 +151,7 @@ void Robot::drive(double distance, double speed) {
     leftFront.Set(0);
     rightFront.Set(0);
 
+    //reset timer if motors are not moving
     encoderDriveRunning = false;
     sTimer->Reset();
     aTimer->Reset();
@@ -179,8 +181,9 @@ void Robot::limelightAlign() {
   frc::SmartDashboard::PutNumber("horizontal offset", targetOffsetAngle_Horizontal);
 
   //59.6 horizontal degrees FOV
-  if(gamepad1.GetRawButton(3)) {
-    //3 & -3 are in degrees
+  //If buton x is pressed...
+  if(gamepad1.GetRawButton(3)) { 
+    //if angle is geater than 3 degrees, adjust robot to allign with hub 
     if(targetOffsetAngle_Horizontal > 3) {
       leftChange = constant * abs(targetOffsetAngle_Horizontal) + 0.1;
       rightChange = -(constant * abs(targetOffsetAngle_Horizontal) + 0.1);
@@ -193,7 +196,7 @@ void Robot::limelightAlign() {
 
       leftFront.Set(-leftSpeed);
       rightFront.Set(rightSpeed);
-    }
+    } //if angle is less than -3 degrees, adjust robot to allign with hub 
     else if(targetOffsetAngle_Horizontal < -3) {
       leftChange = (constant * abs(targetOffsetAngle_Horizontal) + 0.1);
       rightChange = constant * abs(targetOffsetAngle_Horizontal) + 0.1;
@@ -209,7 +212,7 @@ void Robot::limelightAlign() {
     }
     
   }
-  else {
+  else { //if button x is not pressed, set motor speeds to 0 
     leftFront.Set(0);
     rightFront.Set(0);
   }
@@ -221,9 +224,9 @@ void Robot::limelightAlign() {
 
 }
 
+//called in auto to make robot align with hub using limelight
 void Robot::autoLimelightAlign() {
-  //remakes the limelight data table
-  //timer testing
+  
   auto alignTime = aTimer->Get();  
   alignElapsedTime += (alignTime - alignPreviousTime);
   
@@ -243,7 +246,7 @@ void Robot::autoLimelightAlign() {
 
       targetOffsetAngle_Horizontal = limelight->GetNumber("tx",0.0);
       frc::SmartDashboard::PutNumber("horizontal offset", targetOffsetAngle_Horizontal);
-      
+      //if angle is geater than 3 degrees, adjust robot to allign with hub 
         if((targetOffsetAngle_Horizontal > 3)) {
           leftChange = constant * abs(targetOffsetAngle_Horizontal) + 0.1;
           rightChange = -(constant * abs(targetOffsetAngle_Horizontal) + 0.1);
@@ -256,7 +259,7 @@ void Robot::autoLimelightAlign() {
 
           leftFront.Set(-leftSpeed);
           rightFront.Set(rightSpeed);
-        }
+        } //if angle is less than -3 degrees, adjust robot to allign with hub 
         else if((targetOffsetAngle_Horizontal < -3)) {
           leftChange = (constant * abs(targetOffsetAngle_Horizontal) + 0.1);
           rightChange = constant * abs(targetOffsetAngle_Horizontal) + 0.1;
@@ -298,6 +301,7 @@ void Robot::shoot(){
   
   elapsedTime += (time - previousTime);
 
+  //if at or past 5 seconds, set all motor speeds to 0 
   if (elapsedTime >= units::second_t(5)) {
     intake.Set(0);
     vConveyorLeft.Set(0);
@@ -308,7 +312,7 @@ void Robot::shoot(){
 
     functionCompleted = 1;
     //delete sTimer;
-  }
+  } //if at or past 3 seconds, turn on motors for intake and conveyors
   else if (elapsedTime >= units::second_t(3)) {
     intake.Set(1);
     vConveyorLeft.Set(1);
@@ -356,6 +360,7 @@ void Robot::encoderDrive(double speed, double leftInches, double rightInches, do
   rightEncoder.GetPosition();
   }
 
+//unused
 void Robot::turnDrive(double speed, double degrees, double timeoutSeconds) {
   int newLeftTarget;
   int newRightTarget;
@@ -425,7 +430,7 @@ void Robot::ScoringCargo(){
   }
 }
 
-
+//unused?
 void Robot::ShootemQuickie() {
   // bool x;
   //   if(gamepad1.GetRawButtonPressed(4)) {
@@ -482,6 +487,7 @@ void Robot::lowerPortShot() {
     vConveyorLeft.Set(1);
     vConveyorRight.Set(-1);
     
+    //after 4 seconds, set all motor speeds to 0 
     frc::Wait(units::second_t(4));
     
     intake.Set(0);
@@ -529,7 +535,7 @@ int Robot::getPosition() {
 
     } 
 }
-
+//turns on/off motors to intake cargo depending on microswitch data
 void Robot::microswitchIntake(){
     frc::SmartDashboard::PutNumber("GetPosition function", getPosition());
     if (getPosition() == 1){
@@ -602,7 +608,7 @@ void::Robot::troyAndMichaelController(){
   }   
 }
 
-//Kent Prefrence
+//Kent Preference
 void::Robot::kentController(){
 
   //when right bumper is pressed, turn on intake and horizontal conveyor
@@ -673,12 +679,11 @@ void Robot::joshController() {
 
   // If right bumper is pressed,
   // solenoid sets forward output to false and reverse output to true. 
-  // This results in piston extension.
   if (gamepad2.GetRawButtonPressed(6)){
     
     rightSolenoid.Set(frc::DoubleSolenoid::kReverse);
     leftSolenoid.Set(frc::DoubleSolenoid::kReverse);
-  } 
+  } //Once solenoids are set and left left bumper is pressed, extend pistons (toggle)
   else if (gamepad2.GetRawButtonPressed(5)){
     //Toggle
     rightSolenoid.Toggle();
