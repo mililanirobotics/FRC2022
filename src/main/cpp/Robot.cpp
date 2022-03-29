@@ -37,8 +37,7 @@ void Robot::RobotInit() {
   leftBack.Follow(leftFront);
   rightBack.Follow(rightFront);
 
-  rightSolenoid.Set(frc::DoubleSolenoid::kForward);
-  leftSolenoid.Set(frc::DoubleSolenoid::kForward);    
+     
   
 
   leftEncoder.SetPositionConversionFactor(42);
@@ -153,8 +152,10 @@ void Robot::AutonomousPeriodic() {
 }
 
 void Robot::TeleopInit() {
-  //flywheel shooter 2 follows flywheel shooter 1 
-  //flywheelShooter2.Follow(flywheelShooter1);
+  //Set intake to retract upon initilization
+  rightSolenoid.Set(frc::DoubleSolenoid::kForward);
+  leftSolenoid.Set(frc::DoubleSolenoid::kForward);
+
   //set motor velocity to 0 
   motorVelocity = 0;
 }
@@ -162,7 +163,7 @@ void Robot::TeleopInit() {
 //1300 is adequate rpm for low scoring.
 
 void Robot::TeleopPeriodic() {
-  troyAndMichaelController();
+  tankDrive();
   //joshController();
   //kentController();
   testController();

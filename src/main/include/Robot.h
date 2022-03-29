@@ -53,38 +53,32 @@ class Robot : public frc::TimedRobot {
   
   // User Defined Functions
   double LimelightDistance();
-  double GetMedian(double value1, double value2, double value3);
   double DistanceToRPM(double distance);
+
+  int getPosition();
+
   void limelightAlign();
   void autoLimelightAlign();
   void shoot();
-  void ShootemQuickie();
-  void ScoringCargo();
   void lowerPortShot();
   void kentController();
   void joshController();
-  void troyAndMichaelController();
+  void tankDrive();
   void microswitchIntake();
   void testController();
-
-  void encoderDrive(double speed, double leftInches, double rightInches, double timeoutSeconds);
-  void horizontalConveyor(double speed, double rotations, double timeoutSeconds);
-  void verticalConveyor(double speed, double rotations, double timeoutSeconds);
-  void flywheel(double speed, double rotations, double timeoutSeconds);
-  void turnDrive(double speed, double degrees, double timeoutSeconds);
   void solenoidExtension();
   void drive(double distance, double speed);
 
-  int getPosition();
   
   //=========================================================================== 
   // Object declarations
   //===========================================================================
 
+
   //pidcontroller  
-  rev::SparkMaxPIDController flywheelPID = flywheelShooter1.GetPIDController();
-  rev::SparkMaxPIDController rightDrive = rightFront.GetPIDController();
-  rev::SparkMaxPIDController leftDrive = leftFront.GetPIDController();
+  rev::SparkMaxPIDController flywheelPID {flywheelShooter1.GetPIDController()};
+  rev::SparkMaxPIDController rightDrive {rightFront.GetPIDController()};
+  rev::SparkMaxPIDController leftDrive {leftFront.GetPIDController()};
 
   //controller
   frc::Joystick gamepad1{0};
@@ -96,13 +90,12 @@ class Robot : public frc::TimedRobot {
   frc::ADXRS450_Gyro gyro;
 
   //Drive motors
-  
   rev::CANSparkMax rightFront {27, rev::CANSparkMax::MotorType::kBrushless};
   rev::CANSparkMax rightBack {11, rev::CANSparkMax::MotorType::kBrushless};
   rev::CANSparkMax leftFront {12, rev::CANSparkMax::MotorType::kBrushless};
   rev::CANSparkMax leftBack {13, rev::CANSparkMax::MotorType::kBrushless}; 
   
-  //Vertical conveyor motor
+  //Vertical conveyor motors
   rev::CANSparkMax vConveyorLeft {20, rev::CANSparkMax::MotorType::kBrushless}; 
   rev::CANSparkMax vConveyorRight {19, rev::CANSparkMax::MotorType::kBrushless}; 
   
@@ -121,7 +114,6 @@ class Robot : public frc::TimedRobot {
   rev::SparkMaxRelativeEncoder rightEncoder {rightFront.GetEncoder()};
   rev::SparkMaxRelativeEncoder flywheelEncoder {flywheelShooter1.GetEncoder()};
 
-
   //micro-switches
   frc::DigitalInput horizontalSwitch {0};//port will change 
   frc::DigitalInput verticalSwitch {1}; //port will change
@@ -136,27 +128,24 @@ class Robot : public frc::TimedRobot {
   //===========================================================================
 
   // Constant variables
-  const double wheelDiameterInches {4}; //TBD
+  const double wheelDiameterInches {4}; 
   const double wheelCircumference {M_PI * wheelDiameterInches};
   const double countsPerRev {42};
-  const double gearReduction {8.6}; //TBD
+  const double gearReduction {8.6}; 
   const double countsPerInch {(countsPerRev * gearReduction)/wheelCircumference};
-  const double degrees {0};
-  const double robotRadius {25}; //TBD
-  const double degreesToInches {(degrees * (M_PI / 180) * robotRadius)};
   
   double& error {gyroAngle};
   double speedFactor {error * 0.65}; //arbitrary number (to be tested)
   double distance {0};
-  double targetDistance; 
-  double fractionOfTargetDistance;
-  double averageActualDistance;
-  double gyroAngle; 
+  double targetDistance {0}; 
+  double fractionOfTargetDistance {0};
+  double averageActualDistance {0};
+  double gyroAngle {0}; 
 
   //angle to distance function variables:
-  double trueAngle;
-  double distanceToHub;
-  double firstRun, secondRun, thirdRun;
+  double trueAngle {0};
+  double distanceToHub {0};
+  
 
   //Limelight variables
   
