@@ -130,8 +130,7 @@ void Robot::AutonomousPeriodic() {
 
     
 
-    //ShootemQuickie();
-
+    //ShootemQuickie()=-'[-345]
 
     //Output gyro angle and encoder positions to Smart Dashboard 
     frc::SmartDashboard::PutNumber("Gyro Status", gyro.GetAngle());
@@ -175,6 +174,9 @@ void Robot::TeleopPeriodic() {
 void Robot::DisabledInit() {
   rightSolenoid.Set(frc::DoubleSolenoid::kForward);
   leftSolenoid.Set(frc::DoubleSolenoid::kForward);
+
+  leftEncoder.SetPosition(0);
+  rightEncoder.SetPosition(0);
 }
 
 void Robot::DisabledPeriodic() {}

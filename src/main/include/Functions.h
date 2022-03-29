@@ -296,8 +296,8 @@ void Robot::shoot(){
   rightFront.Set(0);
  
   //calling method to change distance recieved from limelight to rpm value 
-  DistanceToRPM(LimelightDistance());
-  flywheelPID.SetReference(-motorVelocity * 0.942, rev::ControlType::kVelocity);
+ 
+  flywheelPID.SetReference(-DistanceToRPM(LimelightDistance()), rev::ControlType::kVelocity);
   frc::SmartDashboard::PutNumber("MotorVelocity", motorVelocity);
   
   
@@ -306,7 +306,7 @@ void Robot::shoot(){
   elapsedTime += (time - previousTime);
 
   //if at or past 5 seconds, set all motor speeds to 0 
-  if (elapsedTime >= units::second_t(5)) {
+  if (elapsedTime >= units::second_t(7)) {
     intake.Set(0);
     vConveyorLeft.Set(0);
     vConveyorRight.Set(0);
@@ -318,10 +318,10 @@ void Robot::shoot(){
     //delete sTimer;
   } //if at or past 3 seconds, turn on motors for intake and conveyors
   else if (elapsedTime >= units::second_t(3)) {
-    intake.Set(1);
-    vConveyorLeft.Set(1);
-    vConveyorRight.Set(-1);
-    hConveyor.Set(1);
+    intake.Set(-1);
+    vConveyorLeft.Set(-1);
+    vConveyorRight.Set(1);
+    hConveyor.Set(-1);
   }
   
   previousTime = time; 
@@ -510,7 +510,7 @@ void Robot::lowerPortShot() {
 // takes distance (in inches) and converts it to a rpm using
 //changes distance value from limelight to rpm
 double Robot::DistanceToRPM (double distance) {
-  return 2 * (int)(8.56*distance + 1097);
+  return 2 * (int)(8.56*(distance+10) + (1097+50));
 }
 
 //returns varrying integers based on location of cargo for automated intake function in tele-op
