@@ -37,14 +37,15 @@ void Robot::RobotInit() {
   leftBack.Follow(leftFront);
   rightBack.Follow(rightFront);
 
+  rightSolenoid.Set(frc::DoubleSolenoid::kForward);
+  leftSolenoid.Set(frc::DoubleSolenoid::kForward);    
+  
+
   leftEncoder.SetPositionConversionFactor(42);
   rightEncoder.SetPositionConversionFactor(42);
 
   //calibrate gyro 
-  gyro.Calibrate();
-
-  
-  
+  gyro.Calibrate();  
 }
 
 
@@ -139,7 +140,7 @@ void Robot::AutonomousPeriodic() {
   } else {
     // Default Auto goes here
     if(encoderDriveRunning) {
-      drive(-100, -0.5);
+      drive(-60, -0.3);
     }
 
     if ((functionCompleted == 0) && (encoderDriveRunning == false) && (!alignmentComplete)){   
@@ -154,7 +155,7 @@ void Robot::AutonomousPeriodic() {
 
 void Robot::TeleopInit() {
   //flywheel shooter 2 follows flywheel shooter 1 
-  flywheelShooter2.Follow(flywheelShooter1);
+  //flywheelShooter2.Follow(flywheelShooter1);
   //set motor velocity to 0 
   motorVelocity = 0;
 }
@@ -165,18 +166,88 @@ void Robot::TeleopPeriodic() {
   troyAndMichaelController();
   //joshController();
   //kentController();
+  testController();
+
+  frc::SmartDashboard::PutNumber("Set Flywheel RPM * 2", DistanceToRPM(LimelightDistance()));
+  frc::SmartDashboard::PutNumber("Distance To Hub", LimelightDistance());
 }
 
 void Robot::DisabledInit() {
-  rightSolenoid.Set(frc::DoubleSolenoid::kOff);
-  leftSolenoid.Set(frc::DoubleSolenoid::kOff);
+  rightSolenoid.Set(frc::DoubleSolenoid::kForward);
+  leftSolenoid.Set(frc::DoubleSolenoid::kForward);
 }
 
 void Robot::DisabledPeriodic() {}
 
-void Robot::TestInit() {}
+void Robot::TestInit() {
+  leftSolenoid.Set(frc::DoubleSolenoid::kForward);
+  rightSolenoid.Set(frc::DoubleSolenoid::kForward);
+  
+}
 
-void Robot::TestPeriodic() {}
+void Robot::TestPeriodic() {
+  if(gamepad2.GetRawButtonPressed(1)) {
+    limelightAlign();
+  }
+  else if (gamepad2.GetRawButtonPressed(2)) {
+    motorVelocity += 100;  
+  }
+  else if (gamepad2.GetRawButtonPressed(3)) {
+    motorVelocity += 1000;  
+  }
+  else if (gamepad2.GetRawButtonPressed(4)) {
+    motorVelocity = 0;
+  }
+  else {
+    frc::SmartDashboard::PutNumber("Current motor velocity: ", motorVelocity);
+  }
+
+  //intake and h conveyor
+  if (gamepad2.GetRawButton(5)) {
+    hConveyor.Set(-1);
+    intake.Set(-1);
+  } 
+  else if(gamepad2.GetRawButton(6)) {
+    hConveyor.Set(1);
+    intake.Set(1);
+  }
+  else {
+    hConveyor.Set(0);
+    intake.Set(0);
+  }
+
+
+  if (gamepad2.GetRawAxis(2) >= 0.1) {
+    flywheelPID.SetReference(DistanceToRPM(LimelightDistance()), rev::ControlType::kVelocity);    
+  }
+  else {
+    flywheelPID.SetReference(0, rev::ControlType::kVelocity);
+  }
+  if (gamepad2.GetRawAxis(3) >= 0.1) {
+    vConveyorLeft.Set(-1);
+    vConveyorRight.Set(1);
+  }
+  else {
+    vConveyorLeft.Set(0);
+    vConveyorRight.Set(0);
+  }
+    
+  //solenoids
+ if(gamepad2.GetRawButtonPressed(7)) {
+    leftSolenoid.Set(frc::DoubleSolenoid::kForward);
+    rightSolenoid.Set(frc::DoubleSolenoid::kForward);
+  }
+    
+  if(gamepad2.GetRawButtonPressed(8)) {
+    leftSolenoid.Set(frc::DoubleSolenoid::kReverse);
+    rightSolenoid.Set(frc::DoubleSolenoid::kReverse);
+  }
+
+  
+  frc::SmartDashboard::PutNumber("Distance to hub: ", LimelightDistance());
+  frc::SmartDashboard::PutNumber("Motor Velocity", motorVelocity);
+  testController();
+}
 
 #ifndef RUNNING_FRC_TESTS
 int main() {

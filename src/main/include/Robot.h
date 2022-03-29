@@ -14,6 +14,9 @@
 #include <frc/DoubleSolenoid.h>
 #include <frc/Compressor.h>
 #include <frc/PneumaticHub.h>
+#include <frc/motorcontrol/Spark.h>
+#include <frc/motorcontrol/MotorControllerGroup.h>
+#include <frc/drive/DifferentialDrive.h>
 
 //microswitch imports
 #include "frc/DigitalInput.h"
@@ -51,7 +54,7 @@ class Robot : public frc::TimedRobot {
   // User Defined Functions
   double LimelightDistance();
   double GetMedian(double value1, double value2, double value3);
-  void DistanceToRPM(double distance);
+  double DistanceToRPM(double distance);
   void limelightAlign();
   void autoLimelightAlign();
   void shoot();
@@ -62,6 +65,7 @@ class Robot : public frc::TimedRobot {
   void joshController();
   void troyAndMichaelController();
   void microswitchIntake();
+  void testController();
 
   void encoderDrive(double speed, double leftInches, double rightInches, double timeoutSeconds);
   void horizontalConveyor(double speed, double rotations, double timeoutSeconds);
@@ -92,7 +96,8 @@ class Robot : public frc::TimedRobot {
   frc::ADXRS450_Gyro gyro;
 
   //Drive motors
-  rev::CANSparkMax rightFront {10, rev::CANSparkMax::MotorType::kBrushless};
+  
+  rev::CANSparkMax rightFront {27, rev::CANSparkMax::MotorType::kBrushless};
   rev::CANSparkMax rightBack {11, rev::CANSparkMax::MotorType::kBrushless};
   rev::CANSparkMax leftFront {12, rev::CANSparkMax::MotorType::kBrushless};
   rev::CANSparkMax leftBack {13, rev::CANSparkMax::MotorType::kBrushless}; 
@@ -102,7 +107,7 @@ class Robot : public frc::TimedRobot {
   rev::CANSparkMax vConveyorRight {19, rev::CANSparkMax::MotorType::kBrushless}; 
   
   //Intake motor
-  rev::CANSparkMax intake {21, rev::CANSparkMax::MotorType::kBrushless}; 
+  rev::CANSparkMax intake {30, rev::CANSparkMax::MotorType::kBrushless}; 
   
   //Horizontal conveyor motor
   rev::CANSparkMax hConveyor {18, rev::CANSparkMax::MotorType::kBrushless}; 
@@ -118,11 +123,11 @@ class Robot : public frc::TimedRobot {
 
 
   //micro-switches
-  frc::DigitalInput horizontalSwitch {1};//port will change 
-  frc::DigitalInput verticalSwitch {2}; //port will change
+  frc::DigitalInput horizontalSwitch {0};//port will change 
+  frc::DigitalInput verticalSwitch {1}; //port will change
 
   //solenoids
-  frc::PneumaticHub pneumaticHub {1};
+  frc::PneumaticHub pneumaticHub {2};
   frc::DoubleSolenoid rightSolenoid {pneumaticHub.MakeDoubleSolenoid(0, 1)};
   frc::DoubleSolenoid leftSolenoid {pneumaticHub.MakeDoubleSolenoid(2, 3)};  
   
@@ -162,7 +167,7 @@ class Robot : public frc::TimedRobot {
    * Decrease feed forward to decrease settling point, increase to increase settling point
    */
 
-  double kP {0.000001}, kFF {0.00015283}, kMaxoutput {1}, kminoutput {-1}, kI {1e-4}, kD {1};
+  double kP {0.000001}, kFF {0.000178}, kMaxoutput {1}, kminoutput {-1}, kI {1e-4}, kD {1};
   double motorVelocity {0};
   double trueVelocity;
   
@@ -176,7 +181,9 @@ class Robot : public frc::TimedRobot {
   bool functionCompleted;
   bool alignmentComplete;
   bool isActive;
-
+  bool isShooting {false};
+  bool leftDriveRunning {true};
+  bool rightDriveRunning {true};
   //Variables for use of the timer within autonomous. 
   frc::Timer *pTimer = new frc::Timer();
 

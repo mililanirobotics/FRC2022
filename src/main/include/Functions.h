@@ -33,8 +33,8 @@
 
 using namespace std;
 
-frc::Timer *sTimer;
-frc::Timer *aTimer;
+frc::Timer *sTimer {nullptr};
+frc::Timer *aTimer {nullptr};
 
 //Finds distance of robot to reflective tape on hub using limelight
 double Robot::LimelightDistance() {
@@ -54,7 +54,7 @@ double Robot::LimelightDistance() {
     trueAngle = (39 + targetOffsetAngle_Vertical) * M_PI / 180;
 
     //should be 38 off the ground, but height is different for testing purposes
-    distanceToHub = (104-34)/(tan(trueAngle)) + (24 + 13);
+    distanceToHub = (104-23.8)/(tan(trueAngle)) + (24 + 6.868);
 
     frc::SmartDashboard::PutNumber("Distance: ", distanceToHub);
     return distanceToHub;
@@ -102,7 +102,7 @@ void Robot::drive(double distance, double speed) {
   gyroAngle = gyro.GetAngle();
 
   //Converts distance in inches to counts for drive motors
-  targetDistance = distance * countsPerInch;
+  targetDistance = 0.7317 * (distance * countsPerInch);
 
   averageActualDistance = (-(leftEncoder.GetPosition()) + rightEncoder.GetPosition())/2;
 
@@ -114,15 +114,15 @@ void Robot::drive(double distance, double speed) {
 
   //Adjusts left and right motor speeds to account for drift measured by the gyro sensor
   if (abs(leftEncoder.GetPosition()) < abs(targetDistance) && abs(rightEncoder.GetPosition()) < abs(targetDistance)){
-    if(error > 1){
-      rightFront.Set(speed + (speed * speedFactor));
-      leftFront.Set(-speed);
-    } else if (error < -1) {
-      leftFront.Set(-(speed + (speed * speedFactor)));
-      rightFront.Set(speed);      
+    if(error < -1){
+      rightFront.Set(-(speed + (speed * speedFactor)));
+      leftFront.Set(speed);
+    } else if (error > 1) {
+      leftFront.Set((speed + (speed * speedFactor)));
+      rightFront.Set(-speed);      
     } else {
-      rightFront.Set(speed);
-      leftFront.Set(-speed);   
+      rightFront.Set(-speed);
+      leftFront.Set(speed);   
     } 
 
     //slows robot down when it reaches a fraction of target distance 
@@ -182,11 +182,11 @@ void Robot::limelightAlign() {
 
   //59.6 horizontal degrees FOV
   //If buton x is pressed...
-  if(gamepad1.GetRawButton(3)) { 
+  if(gamepad2.GetRawButton(4)) { 
     //if angle is geater than 3 degrees, adjust robot to allign with hub 
     if(targetOffsetAngle_Horizontal > 3) {
       leftChange = constant * abs(targetOffsetAngle_Horizontal) + 0.1;
-      rightChange = -(constant * abs(targetOffsetAngle_Horizontal) + 0.1);
+      rightChange = (constant * abs(targetOffsetAngle_Horizontal) + 0.1);
 
       leftSpeed = leftChange;      
       rightSpeed = rightChange;
@@ -194,7 +194,7 @@ void Robot::limelightAlign() {
       frc::SmartDashboard::PutNumber("left motor speed", leftSpeed);
       frc::SmartDashboard::PutNumber("left motor speed", rightSpeed);
 
-      leftFront.Set(-leftSpeed);
+      leftFront.Set(leftSpeed);
       rightFront.Set(rightSpeed);
     } //if angle is less than -3 degrees, adjust robot to allign with hub 
     else if(targetOffsetAngle_Horizontal < -3) {
@@ -207,12 +207,12 @@ void Robot::limelightAlign() {
       frc::SmartDashboard::PutNumber("left motor speed", leftSpeed);
       frc::SmartDashboard::PutNumber("left motor speed", rightSpeed);
       
-      leftFront.Set(leftSpeed);
-      rightFront.Set(rightSpeed);
+      leftFront.Set(-leftSpeed);
+      rightFront.Set(-rightSpeed);
     }
     
   }
-  else { //if button x is not pressed, set motor speeds to 0 
+  else if (!(rightDriveRunning && leftDriveRunning)) { //if button x is not pressed, set motor speeds to 0 
     leftFront.Set(0);
     rightFront.Set(0);
   }
@@ -249,7 +249,7 @@ void Robot::autoLimelightAlign() {
       //if angle is geater than 3 degrees, adjust robot to allign with hub 
         if((targetOffsetAngle_Horizontal > 3)) {
           leftChange = constant * abs(targetOffsetAngle_Horizontal) + 0.1;
-          rightChange = -(constant * abs(targetOffsetAngle_Horizontal) + 0.1);
+          rightChange = (constant * abs(targetOffsetAngle_Horizontal) + 0.1);
 
           leftSpeed = leftChange;      
           rightSpeed = rightChange;
@@ -257,7 +257,7 @@ void Robot::autoLimelightAlign() {
           frc::SmartDashboard::PutNumber("left motor speed", leftSpeed);
           frc::SmartDashboard::PutNumber("left motor speed", rightSpeed);
 
-          leftFront.Set(-leftSpeed);
+          leftFront.Set(leftSpeed);
           rightFront.Set(rightSpeed);
         } //if angle is less than -3 degrees, adjust robot to allign with hub 
         else if((targetOffsetAngle_Horizontal < -3)) {
@@ -270,8 +270,8 @@ void Robot::autoLimelightAlign() {
           frc::SmartDashboard::PutNumber("left motor speed", leftSpeed);
           frc::SmartDashboard::PutNumber("left motor speed", rightSpeed);
           
-          leftFront.Set(leftSpeed);
-          rightFront.Set(rightSpeed);
+          leftFront.Set(-leftSpeed);
+          rightFront.Set(-rightSpeed);
         } else {
           leftFront.Set(0);
           rightFront.Set(0);
@@ -290,10 +290,14 @@ void Robot::autoLimelightAlign() {
 void Robot::shoot(){
   
   //autoLimelightAlign();
+
+  //makes motors stop
+  leftFront.Set(0);
+  rightFront.Set(0);
  
   //calling method to change distance recieved from limelight to rpm value 
   DistanceToRPM(LimelightDistance());
-  flywheelPID.SetReference(-motorVelocity, rev::ControlType::kVelocity);
+  flywheelPID.SetReference(-motorVelocity * 0.942, rev::ControlType::kVelocity);
   frc::SmartDashboard::PutNumber("MotorVelocity", motorVelocity);
   
   
@@ -504,33 +508,30 @@ void Robot::lowerPortShot() {
 }
 
 // takes distance (in inches) and converts it to a rpm using
-// calculated polynomial function 4.7x^2 - 35.5x + 1891
-
 //changes distance value from limelight to rpm
-void Robot::DistanceToRPM (double distance) {
-  distance = distance/12;
-  motorVelocity = (int)(5.76*(distance*distance) + (5.39*distance) + 3670);
+double Robot::DistanceToRPM (double distance) {
+  return 2 * (int)(8.56*distance + 1097);
 }
 
 //returns varrying integers based on location of cargo for automated intake function in tele-op
 int Robot::getPosition() {
     //if both switches sense cargo, return 1 
-    while (horizontalSwitch.Get() == 1 && verticalSwitch.Get() == 1){
-        return 1;
-      }
+    if (horizontalSwitch.Get() == 1 && verticalSwitch.Get() == 1){
+      return 1;
+    }
     
     //if horizontal switch senses cargo, but vertical switch does not sense cargo, return 2
-    while (horizontalSwitch.Get() == 1 && verticalSwitch.Get() == 0){
+    if (horizontalSwitch.Get() == 1 && verticalSwitch.Get() == 0){
         return 2;
-      }  
+    }  
     
     //if horizontal switch does not sense cargo, but vertical switch does sense cargo, return 3 
-    while (horizontalSwitch.Get() == 0 && verticalSwitch.Get() == 1){
+    if (horizontalSwitch.Get() == 0 && verticalSwitch.Get() == 1){
         return 3;
      } 
      
     //if both horizontal and vertical switch do not sense cargo, return 4 
-     while (horizontalSwitch.Get() == 0 && verticalSwitch.Get() == 0){
+     if (horizontalSwitch.Get() == 0 && verticalSwitch.Get() == 0){
         return 4;
 
     } 
@@ -572,8 +573,8 @@ void Robot::microswitchIntake(){
         vConveyorRight.Set(-1);
       } //vertical conveyor will turn on until cargo moves to vertical sensor position
       if (horizontalSwitch.Get() == 0){
-        hConveyor.Set(1);
-        intake.Set(1);
+        hConveyor.Set(-1);
+        intake.Set(-1);
       } //horizontal conveyor will turn on until cargo moves to horizontal sensor position
     } 
     else {
@@ -586,26 +587,40 @@ void Robot::microswitchIntake(){
 
 void::Robot::troyAndMichaelController(){
   //left motors
-  if(Attack31.GetRawButtonPressed(1) && (Attack31.GetRawAxis(1) >= 0.1 || Attack31.GetRawAxis(1) <= -0.1)) {
-    leftFront.Set(-Attack31.GetRawAxis(1) * 0.5);
-  }
-  else if(Attack31.GetRawAxis(1) >= 0.1 || Attack31.GetRawAxis(1) <= -0.1) {
-    leftFront.Set(-Attack31.GetRawAxis(1));
-  }
-  else {
-    leftFront.Set(0);
-  }   
   
-  //Right motors
-  if(Attack32.GetRawButtonPressed(1) && (Attack32.GetRawAxis(1) >= 0.1 || Attack32.GetRawAxis(1) <= -0.1)) {
-    rightFront.Set(Attack32.GetRawAxis(1) * 0.5);
+  if(!isShooting) {
+    if(Attack32.GetRawButton(1) && (Attack31.GetRawAxis(1) >= 0.1 || Attack31.GetRawAxis(1) <= -0.1)) {
+      leftFront.Set(-Attack31.GetRawAxis(1) * 0.35);
+      frc::SmartDashboard::PutBoolean("Left Running:", true);
+
+    }
+    else if(Attack31.GetRawAxis(1) >= 0.1 || Attack31.GetRawAxis(1) <= -0.1) {
+      leftFront.Set(-Attack31.GetRawAxis(1) * 0.7);
+      frc::SmartDashboard::PutBoolean("Left Running:", true);
+    }
+    else {
+      leftFront.Set(0);
+      frc::SmartDashboard::PutBoolean("Left Running:", false);
+      leftDriveRunning = false;
+    }   
+    
+    //Right motors
+    if(Attack32.GetRawButton(1) && (Attack32.GetRawAxis(1) >= 0.1 || Attack32.GetRawAxis(1) <= -0.1)) {
+      rightFront.Set(Attack32.GetRawAxis(1) * 0.35);
+      frc::SmartDashboard::PutBoolean("Right Running:", true);
+
+    }
+    else if(Attack32.GetRawAxis(1) >= 0.1 || Attack32.GetRawAxis(1) <= -0.1) {
+      rightFront.Set(Attack32.GetRawAxis(1) * 0.7);
+      frc::SmartDashboard::PutBoolean("Right Running:", true);
+
+    }
+    else {
+      rightFront.Set(0);
+      frc::SmartDashboard::PutBoolean("Right Running:", false);
+      rightDriveRunning = false;
+    }   
   }
-  else if(Attack32.GetRawAxis(1) >= 0.1 || Attack32.GetRawAxis(1) <= -0.1) {
-    rightFront.Set(Attack32.GetRawAxis(1));
-  }
-  else {
-    rightFront.Set(0);
-  }   
 }
 
 //Kent Preference
@@ -627,7 +642,7 @@ void::Robot::kentController(){
 
   //when button b is pressed, vertical conveyor turns on 
   if(gamepad2.GetRawButtonPressed(2)){
-    vConveyorLeft.Set(1);
+    vConveyorLeft.Set(-1);
     vConveyorRight.Set(1);
   } else {
     vConveyorLeft.Set(0);
@@ -652,11 +667,11 @@ void::Robot::kentController(){
 void Robot::joshController() {
  
   //if left trigger is pressed, intake and horizontal conveyor turns on 
-  if (gamepad2.GetRawAxis(2) >=0;05) {
+  if (gamepad2.GetRawAxis(2) >= 0.05) {
     intake.Set(1);
     hConveyor.Set(1);
   } //if right trigger is pressed, intake and horizontal conveyor will reverse
-  else if (gamepad2.GetRawAxis(3) >=0;05){
+  else if (gamepad2.GetRawAxis(3) >= 0.05){
     intake.Set(-1);
     hConveyor.Set(-1);
   }
@@ -701,3 +716,64 @@ void Robot::joshController() {
   }
 }
 
+void Robot::testController () {
+  if(gamepad2.GetRawButton(1)) {
+    flywheelPID.SetReference(-DistanceToRPM(LimelightDistance()), rev::ControlType::kVelocity);
+  } 
+  else {
+    flywheelPID.SetReference(0, rev::ControlType::kVelocity);
+  }
+
+  //horizontal and vertical reverse
+  
+
+  if(gamepad2.GetRawButton(3)) {
+    microswitchIntake();
+  }
+
+  
+  //limelightAlign();
+  
+
+  //horizontal conveyor
+  if (gamepad2.GetRawAxis(2) >= 0.05) {
+    intake.Set(-1);
+    hConveyor.Set(-1);
+  } 
+  else if (gamepad2.GetRawButton(2)) {
+    intake.Set(1);
+    hConveyor.Set(1);
+  } 
+  else { 
+    intake.Set(0);
+    hConveyor.Set(0);
+  }
+
+  //vertical conveyor 
+  if(gamepad2.GetRawAxis(3) >= 0.05){
+    vConveyorLeft.Set(-1);
+    vConveyorRight.Set(1);
+  }
+  else if (gamepad2.GetRawButton(2)) {
+    vConveyorLeft.Set(1);
+    vConveyorRight.Set(-1);
+  } 
+  else {
+    vConveyorLeft.Set(0);
+    vConveyorRight.Set(0);
+  }
+
+  //intake
+ 
+
+  //solenoids
+  if(gamepad2.GetRawButtonPressed(7)) {
+    leftSolenoid.Set(frc::DoubleSolenoid::kForward);
+    rightSolenoid.Set(frc::DoubleSolenoid::kForward);
+  }
+    
+  if(gamepad2.GetRawButtonPressed(8)) {
+    leftSolenoid.Set(frc::DoubleSolenoid::kReverse);
+    rightSolenoid.Set(frc::DoubleSolenoid::kReverse);
+  }
+}
