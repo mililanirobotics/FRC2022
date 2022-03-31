@@ -143,31 +143,28 @@ void Robot::limelightAlign() {
   targetOffsetAngle_Horizontal = limelight->GetNumber("tx",0.0);
   frc::SmartDashboard::PutNumber("horizontal offset", targetOffsetAngle_Horizontal);
 
-  //59.6 horizontal degrees FOV
-  //If buton x is pressed...
-  if(gamepad2.GetRawButton(4)) { 
-    //if angle is geater than 3 degrees, adjust robot to align with hub 
-    if(targetOffsetAngle_Horizontal > 3) {
-      leftChange = constant * abs(targetOffsetAngle_Horizontal) + 0.1;
-      rightChange = constant * abs(targetOffsetAngle_Horizontal) + 0.1;
+  //59.6 horizontal degrees FOV  
+  //if angle is geater than 3 degrees, adjust robot to align with hub 
+  if(targetOffsetAngle_Horizontal > 2) {
+    leftChange = constant * abs(targetOffsetAngle_Horizontal) + 0.1;
+    rightChange = constant * abs(targetOffsetAngle_Horizontal) + 0.1;
 
-      leftFront.Set(leftChange);
-      rightFront.Set(rightChange);
-    } 
-    //if angle is less than -3 degrees, adjust robot to align with hub 
-    else if(targetOffsetAngle_Horizontal < -3) {
-      leftChange = constant * abs(targetOffsetAngle_Horizontal) + 0.1;
-      rightChange = constant * abs(targetOffsetAngle_Horizontal) + 0.1;
+    leftFront.Set(leftChange);
+    rightFront.Set(rightChange);
+  } 
+  //if angle is less than -3 degrees, adjust robot to align with hub 
+  else if(targetOffsetAngle_Horizontal < -2) {
+    leftChange = constant * abs(targetOffsetAngle_Horizontal) + 0.1;
+    rightChange = constant * abs(targetOffsetAngle_Horizontal) + 0.1;
 
-      leftFront.Set(-leftChange);
-      rightFront.Set(-rightChange);
-    }
+    leftFront.Set(-leftChange);
+    rightFront.Set(-rightChange);
   }
-  //if button x is not pressed, set motor speeds to 0 
-  else if(!(rightDriveRunning && leftDriveRunning)) { 
+  else {
     leftFront.Set(0);
     rightFront.Set(0);
   }
+ 
 }
 
 //called in auto to make robot align with hub using limelight
@@ -285,10 +282,10 @@ void Robot::lowerPortShot() {
 // takes distance (in inches) and converts it to a rpm using
 //changes distance value from limelight to rpm
 double Robot::DistanceToRPM (double distance) {
-  return 2 * (int)(8.56*(distance+10) + (1097+50));
+  return 2 * (int)(8.56*(distance+10) + (1097 - 0));
 }
 
-//returns varrying integers based on location of cargo for automated intake function in tele-op
+//(UNUSED) returns varrying integers based on location of cargo for automated intake function in tele-op
 int Robot::getPosition() {
     //if both switches sense cargo, return 1 
     if (horizontalSwitch.Get() == 1 && verticalSwitch.Get() == 1){
@@ -361,9 +358,8 @@ void Robot::microswitchIntake(){
 }
 
 void::Robot::tankDrive(){
-  //left motors
-  
   if(!isShooting) {
+    // Left Motors
     if(Attack32.GetRawButton(1) && (Attack31.GetRawAxis(1) >= 0.1 || Attack31.GetRawAxis(1) <= -0.1)) {
       leftFront.Set(-Attack31.GetRawAxis(1) * 0.35);
       frc::SmartDashboard::PutBoolean("Left Running:", true);
@@ -395,119 +391,29 @@ void::Robot::tankDrive(){
       frc::SmartDashboard::PutBoolean("Right Running:", false);
       rightDriveRunning = false;
     }   
+
+    //alignment
+    if (Attack32.GetRawButton(2)) {
+        limelightAlign();
+    }
   }
 }
 
-//Kent Preference
-void::Robot::kentController(){
-
-  //when right bumper is pressed, turn on intake and horizontal conveyor
-  if(gamepad2.GetRawButtonPressed(6)){
-    intake.Set(1);
-    hConveyor.Set(1);
-  } //when left bumper is pressed, reverse intake and horizontal conveyor
-  else if(gamepad2.GetRawButtonPressed(5)){ 
-    intake.Set(-1);
-    hConveyor.Set(-1);
-  } //turn off intake and horizontal conveyor otherwise
-  else {
-    intake.Set(0);
-    hConveyor.Set(0);
-  }
-
-  //when button b is pressed, vertical conveyor turns on 
-  if(gamepad2.GetRawButtonPressed(2)){
-    vConveyorLeft.Set(-1);
-    vConveyorRight.Set(1);
-  } else {
-    vConveyorLeft.Set(0);
-    vConveyorRight.Set(0);
-  }
-
- 
-  int dpadDirection = gamepad2.GetPOV(0);
-  //if dpad up is pressed, solenoid turns on (out)
-  if(dpadDirection == 0){
-    rightSolenoid.Set(frc::DoubleSolenoid::kReverse);
-    leftSolenoid.Set(frc::DoubleSolenoid::kReverse);
-  } //if dpad down is pressed, solenoid turns off (in)
-  else if (dpadDirection == 180){
-    rightSolenoid.Toggle();
-    leftSolenoid.Toggle();
-  }
-  //scores either one or two cargo, change based on whichever buttons available 
-  }
-
-void Robot::joshController() {
- 
-  //if left trigger is pressed, intake and horizontal conveyor turns on 
-  if (gamepad2.GetRawAxis(2) >= 0.05) {
-    intake.Set(1);
-    hConveyor.Set(1);
-  } //if right trigger is pressed, intake and horizontal conveyor will reverse
-  else if (gamepad2.GetRawAxis(3) >= 0.05){
-    intake.Set(-1);
-    hConveyor.Set(-1);
-  }
-  else {
-    intake.Set(0);
-    hConveyor.Set(0);
-  }
-    
-  int dpadDirection = gamepad2.GetPOV(0);
-
-  //if dpad up is pressed, vertical conveyor turns on 
-  if(dpadDirection == 0){
-    vConveyorLeft.Set(1);
-    vConveyorRight.Set(1);
-  } 
-  else {
-    vConveyorLeft.Set(0);
-    vConveyorRight.Set(0);
-  }
-
-  // If right bumper is pressed,
-  // solenoid sets forward output to false and reverse output to true. 
-  if (gamepad2.GetRawButtonPressed(6)){
-    
-    rightSolenoid.Set(frc::DoubleSolenoid::kReverse);
-    leftSolenoid.Set(frc::DoubleSolenoid::kReverse);
-  } //Once solenoids are set and left left bumper is pressed, extend pistons (toggle)
-  else if (gamepad2.GetRawButtonPressed(5)){
-    //Toggle
-    rightSolenoid.Toggle();
-    leftSolenoid.Toggle();
-  }
-  //if x button is pressed, robot will socre cargo in low goal
-  if (gamepad2.GetRawButtonPressed(3)){
-    lowerPortShot();
-  } //if y button is pressed, robot will score cargo in upper goal (change buttons in method)
-  
-  //if a button is pressed, robot will allign with hub
-  if (gamepad2.GetRawButtonPressed(1)){
-    limelightAlign();
-  }
-}
-
-void Robot::testController () {
+void Robot::kentController () {
   if(gamepad2.GetRawButton(1)) {
     flywheelPID.SetReference(-DistanceToRPM(LimelightDistance()), rev::ControlType::kVelocity);
   } 
+  else if(gamepad2.GetRawButton(3)) {
+    flywheelPID.SetReference(-2800, rev::ControlType::kVelocity);
+  }
+  else if(gamepad2.GetRawButton(4)) {
+    flywheelPID.SetReference(-7000, rev::ControlType::kVelocity);
+  }
   else {
     flywheelPID.SetReference(0, rev::ControlType::kVelocity);
   }
 
-  //horizontal and vertical reverse
   
-
-  if(gamepad2.GetRawButton(3)) {
-    microswitchIntake();
-  }
-
-  
-  //limelightAlign();
-  
-
   //horizontal conveyor
   if (gamepad2.GetRawAxis(2) >= 0.05) {
     intake.Set(-1);
@@ -536,16 +442,13 @@ void Robot::testController () {
     vConveyorRight.Set(0);
   }
 
-  //intake
- 
-
   //solenoids
-  if(gamepad2.GetRawButtonPressed(7)) {
+  if(gamepad2.GetRawButtonPressed(5)) {
     leftSolenoid.Set(frc::DoubleSolenoid::kForward);
     rightSolenoid.Set(frc::DoubleSolenoid::kForward);
   }
     
-  if(gamepad2.GetRawButtonPressed(8)) {
+  if(gamepad2.GetRawButtonPressed(6)) {
     leftSolenoid.Set(frc::DoubleSolenoid::kReverse);
     rightSolenoid.Set(frc::DoubleSolenoid::kReverse);
   }

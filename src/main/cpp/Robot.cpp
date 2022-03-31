@@ -26,6 +26,9 @@
 void Robot::RobotInit() {
   m_chooser.SetDefaultOption(kAutoNameDefault, kAutoNameDefault);
   m_chooser.AddOption(kAutoNameCustom, kAutoNameCustom);
+  m_chooser.AddOption(kAutoNameCustom2, kAutoNameCustom2);
+  m_chooser.AddOption(kAutoNameCustom3, kAutoNameCustom3);
+  
   frc::SmartDashboard::PutData("Auto Modes", &m_chooser);
 
   //flywheel shooter 2 follors flywheel shooter 1
@@ -60,10 +63,6 @@ void Robot::RobotPeriodic() {
   
 }
 
-
-
-
-
 /**
  * This autonomous (along with the chooser code above) shows how to select
  * between different autonomous modes using the dashboard. The sendable chooser
@@ -79,15 +78,12 @@ void Robot::RobotPeriodic() {
 void Robot::AutonomousInit() {
   m_autoSelected = m_chooser.GetSelected();
   
-  // m_autoSelected = SmartDashboard::GetString("Auto Selector",
-  //     kAutoNameDefault);
+  
   fmt::print("Auto selected: {}\n", m_autoSelected);
 
   if (m_autoSelected == kAutoNameCustom) {
     // Custom Auto goes here
-    // 
     
-
     functionCompleted = 0;
     encoderDriveRunning = false;
     hasRun = false;
@@ -123,22 +119,48 @@ void Robot::AutonomousInit() {
 
 void Robot::AutonomousPeriodic() {
   if (m_autoSelected == kAutoNameCustom) {
-    // Custom Auto goes here
-    
-    //frc::Wait(units::second_t(3));
-
-    
-
-    //ShootemQuickie()=-'[-345]
-
-    //Output gyro angle and encoder positions to Smart Dashboard 
-    frc::SmartDashboard::PutNumber("Gyro Status", gyro.GetAngle());
-    frc::SmartDashboard::PutNumber("Right Encoder Status", rightEncoder.GetPosition());
-    frc::SmartDashboard::PutNumber("Left Encoder Status", leftEncoder.GetPosition());
-  } else {
-    // Default Auto goes here
     if(encoderDriveRunning) {
       drive(-60, -0.3);
+    }
+
+    if ((functionCompleted == 0) && (encoderDriveRunning == false) && (!alignmentComplete)){   
+      autoLimelightAlign();
+      
+    }
+    if ((functionCompleted == 0) && (encoderDriveRunning == false) && (alignmentComplete)) {
+      shoot();
+    }
+  }
+  else if (m_autoSelected == kAutoNameCustom2) {
+    if(encoderDriveRunning) {
+      drive(-80, -0.3);
+    }
+
+    if ((functionCompleted == 0) && (encoderDriveRunning == false) && (!alignmentComplete)){   
+      autoLimelightAlign();
+      
+    }
+    if ((functionCompleted == 0) && (encoderDriveRunning == false) && (alignmentComplete)) {
+      shoot();
+    }
+  }
+  else if (m_autoSelected == kAutoNameCustom3) {
+    if(encoderDriveRunning) {
+      drive(-100, -0.3);
+    }
+
+    if ((functionCompleted == 0) && (encoderDriveRunning == false) && (!alignmentComplete)){   
+      autoLimelightAlign();
+      
+    }
+    if ((functionCompleted == 0) && (encoderDriveRunning == false) && (alignmentComplete)) {
+      shoot();
+    }
+  }
+  else {
+    // Defaults to 100 inches backwards.
+    if(encoderDriveRunning) {
+      drive(-100, -0.3);
     }
 
     if ((functionCompleted == 0) && (encoderDriveRunning == false) && (!alignmentComplete)){   
@@ -160,22 +182,20 @@ void Robot::TeleopInit() {
   motorVelocity = 0;
 }
 
-//1300 is adequate rpm for low scoring.
-
 void Robot::TeleopPeriodic() {
   tankDrive();
-  //joshController();
-  //kentController();
-  testController();
+  kentController();
 
   frc::SmartDashboard::PutNumber("Set Flywheel RPM * 2", DistanceToRPM(LimelightDistance()));
   frc::SmartDashboard::PutNumber("Distance To Hub", LimelightDistance());
 }
 
 void Robot::DisabledInit() {
+  //retract intake to be safe
   rightSolenoid.Set(frc::DoubleSolenoid::kForward);
   leftSolenoid.Set(frc::DoubleSolenoid::kForward);
 
+  //reset encoders
   leftEncoder.SetPosition(0);
   rightEncoder.SetPosition(0);
 }
@@ -249,7 +269,6 @@ void Robot::TestPeriodic() {
   
   frc::SmartDashboard::PutNumber("Distance to hub: ", LimelightDistance());
   frc::SmartDashboard::PutNumber("Motor Velocity", motorVelocity);
-  testController();
 }
 
 #ifndef RUNNING_FRC_TESTS

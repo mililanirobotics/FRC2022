@@ -62,10 +62,8 @@ class Robot : public frc::TimedRobot {
   void shoot();
   void lowerPortShot();
   void kentController();
-  void joshController();
   void tankDrive();
   void microswitchIntake();
-  void testController();
   void solenoidExtension();
   void drive(double distance, double speed);
 
@@ -147,9 +145,8 @@ class Robot : public frc::TimedRobot {
   double distanceToHub {0};
   
 
-  //Limelight variables
-  
-  /*  
+  /* Limelight variables
+   *  
    * Change the feed forward to adjust settling below or above the set point
    * Tuning a PID for future reference:  
    * https://docs.wpilib.org/en/stable/docs/software/advanced-controls/introduction/tuning-pid-controller.html
@@ -173,7 +170,8 @@ class Robot : public frc::TimedRobot {
   bool isShooting {false};
   bool leftDriveRunning {true};
   bool rightDriveRunning {true};
-  //Variables for use of the timer within autonomous. 
+
+  //Variables for use of the timer within autonomous
   frc::Timer *pTimer = new frc::Timer();
 
   units::time::second_t previousTime {0}; 
@@ -185,6 +183,9 @@ class Robot : public frc::TimedRobot {
  private:
   frc::SendableChooser<std::string> m_chooser;
   const std::string kAutoNameDefault = "Default";
-  const std::string kAutoNameCustom = "My Auto";
+  const std::string kAutoNameCustom = "60 inches";
+  const std::string kAutoNameCustom2 = "80 inches";
+  const std::string kAutoNameCustom3 = "100 inches";
+  
   std::string m_autoSelected;
 };
